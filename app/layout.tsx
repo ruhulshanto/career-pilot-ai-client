@@ -6,8 +6,8 @@ import { AppProvider } from '@/shared/providers/app-provider';
 import { Toaster } from '@/shared/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'CareerAI Platform',
-  description: 'AI-powered career platform'
+  title: 'Career Pilot AI',
+  description: 'AI-powered career development, resume analysis, and job tracking platform'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,33 +1,39 @@
-"use client";
+﻿"use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  Menu,
-  X,
-  User,
-  LogOut,
-  Settings,
+  ArrowRight,
   Bell,
-  Sparkles,
-  FileText,
-  MessageCircle,
-  Star,
-  Zap,
-  Shield,
+  BookOpen,
+  Bot,
   ChevronDown,
-  Home,
-  Briefcase,
-  Users,
-  Crown,
-  Moon,
-  Sun,
-  Search,
+  ClipboardCheck,
+  Compass,
+  FileSearch,
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  MessageSquareText,
+  Route,
+  Settings,
+  Sparkles,
+  Target,
+  UserCircle,
+  X,
 } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+
 import { Button } from "@/shared/components/ui/button";
+import {
+  ThemeModeDropdown,
+  ThemeModeToggle,
+} from "@/shared/components/theme/theme-mode-toggle";
+import { cn } from "@/shared/lib/utils";
+import { getRoleDashboardHref, getWorkspaceHref } from "@/shared/lib/role-routing";
 import { useAuthStore } from "@/shared/store/auth-store";
+import { authApi } from "@/services/auth/auth-api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,485 +41,540 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from "@/shared/components/ui/dropdown-menu";
 
-// Navigation items for unauthenticated users
-const publicNavItems = [
-  { label: "AI Dashboard", href: "/dashboard/user", icon: Home },
-  {
-    label: "Resume Intelligence",
-    href: "/dashboard/user/resume",
-    icon: FileText,
-  },
-  {
-    label: "Interview AI",
-    href: "/dashboard/user/interview",
-    icon: MessageCircle,
-  },
-  { label: "Career Roadmap", href: "/dashboard/user/roadmap", icon: Briefcase },
-  { label: "AI Assistant", href: "/dashboard/user/chat", icon: Sparkles },
+const navItems = [
+  { label: "Explore", href: "/explore" },
+  { label: "Features", href: "/#features" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "About", href: "/about" },
 ] as const;
 
-// Navigation items for authenticated users
-const authenticatedNavItems = [
-  { label: "AI Dashboard", href: "/dashboard/user", icon: Home },
+const careerTools = [
   {
-    label: "Resume Intelligence",
-    href: "/dashboard/user/resume",
-    icon: FileText,
+    label: "Resume Analysis",
+    href: "/#resume-analysis",
+    description: "Turn resume gaps into role-specific edits.",
+    icon: FileSearch,
   },
   {
-    label: "Interview AI",
-    href: "/dashboard/user/interview",
-    icon: MessageCircle,
+    label: "ATS Scanner",
+    href: "/#resume-analysis",
+    description: "Check structure, keywords, and clarity.",
+    icon: ClipboardCheck,
   },
-  { label: "Career Roadmap", href: "/dashboard/user/roadmap", icon: Briefcase },
-  { label: "AI Assistant", href: "/dashboard/user/chat", icon: Sparkles },
+  {
+    label: "Career Roadmap",
+    href: "/#workflow",
+    description: "Map target roles into milestones.",
+    icon: Route,
+  },
+  {
+    label: "Interview Practice",
+    href: "/#features",
+    description: "Practice technical and behavioral answers.",
+    icon: MessageSquareText,
+  },
+  {
+    label: "Job Match Assistant",
+    href: "/#workflow",
+    description: "Track real roles and application movement.",
+    icon: Target,
+  },
+  {
+    label: "AI Career Copilot",
+    href: "/#assistant",
+    description: "Ask focused career strategy questions.",
+    icon: Bot,
+  },
 ] as const;
 
-// Quick actions for authenticated users
-const quickActions = [
-  { label: "Upload Resume", href: "/dashboard/upload", icon: FileText },
+const resourceLinks = [
   {
-    label: "Start Interview Prep",
-    href: "/dashboard/interview",
-    icon: MessageCircle,
+    label: "Blog",
+    href: "/blog",
+    description: "Practical career operating notes.",
+    icon: BookOpen,
   },
-  { label: "Get Career Advice", href: "/dashboard/advice", icon: Sparkles },
-];
+  {
+    label: "Career Guides",
+    href: "/blog",
+    description: "Resume, roadmap, interview, and job search guides.",
+    icon: Compass,
+  },
+  {
+    label: "FAQ",
+    href: "/faq",
+    description: "Answers for reviewers and users.",
+    icon: HelpCircle,
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+    description: "Review, demo, and deployment contact.",
+    icon: MessageSquareText,
+  },
+  {
+    label: "Privacy",
+    href: "/privacy",
+    description: "How public and workspace data is handled.",
+    icon: UserCircle,
+  },
+  {
+    label: "Terms",
+    href: "/terms",
+    description: "Responsible AI career support terms.",
+    icon: ClipboardCheck,
+  },
+] as const;
+
+const isRouteActive = (pathname: string | null, href: string) => {
+  if (!pathname || href.includes("#")) return false;
+  return pathname === href;
+};
+
+function NavDropdown({
+  label,
+  items,
+  active,
+}: {
+  label: string;
+  items: typeof careerTools | typeof resourceLinks;
+  active?: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "h-9 rounded-full px-4 text-sm font-medium transition-all",
+            active
+              ? "bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
+              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+          )}
+          aria-label={`Open ${label} menu`}
+        >
+          {label}
+          <ChevronDown className="h-3.5 w-3.5 ml-1" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="center"
+        className="w-[22rem] rounded-xl border-border/60 bg-popover p-3 shadow-xl shadow-elevation/10 backdrop-blur-xl"
+      >
+        <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70 mb-1">
+          {label}
+        </DropdownMenuLabel>
+        <div className="grid gap-1">
+          {items.map((item) => (
+            <DropdownMenuItem
+              key={`${label}-${item.label}`}
+              asChild
+              className="cursor-pointer rounded-lg p-0 focus:bg-muted/60 transition-colors"
+            >
+              <Link href={item.href} className="flex gap-3 p-3 hover:bg-muted/40">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <item.icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-foreground">
+                    {item.label}
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-muted-foreground/80">
+                    {item.description}
+                  </span>
+                </span>
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const { accessToken, logout, user } = useAuthStore();
-  const router = useRouter();
   const pathname = usePathname();
-  const isAuthenticated = !!accessToken;
+  const router = useRouter();
+  const { accessToken, logout, role, user, hasHydrated } = useAuthStore();
+  const isAuthenticated = hasHydrated && Boolean(accessToken);
+  const dashboardHref = getRoleDashboardHref(role);
+  const displayName = user?.name || "Career Pilot User";
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 12);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Check for dark mode preference
-  useEffect(() => {
-    const isDark =
-      localStorage.getItem("theme") === "dark" ||
-      (!localStorage.getItem("theme") &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setIsDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } finally {
+      logout();
+      closeMobileMenu();
+      router.push("/");
     }
   };
-
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-    setIsMobileMenuOpen(false);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
-  };
-
-  const navItems = isAuthenticated ? authenticatedNavItems : publicNavItems;
 
   return (
     <header
       className={cn(
-        "fixed left-0 right-0 top-0 z-50 border-b transition-all duration-300",
+        "fixed inset-x-0 top-0 z-50 border-b transition-all duration-300",
         isScrolled
-          ? "border-white/10 bg-[#060B18]/90 shadow-lg shadow-black/20 backdrop-blur-xl"
-          : "border-white/5 bg-[#060B18]/70 backdrop-blur-md",
+          ? "dark-surface-topbar border-border/50 bg-background/95 shadow-sm shadow-elevation/5 backdrop-blur-xl dark:border-border/70"
+          : "border-transparent bg-background/75 backdrop-blur-md dark:bg-background/60",
       )}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Logo with Animation */}
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-2 flex-shrink-0 group transition-all duration-300 hover:scale-105"
+          onClick={closeMobileMenu}
+          className="group flex shrink-0 items-center gap-3 transition-transform hover:scale-105"
+          aria-label="Career Pilot AI home"
         >
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/50 rounded-lg blur-lg opacity-75 group-hover:opacity-100 transition-opacity" />
-            <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-sm">C</span>
-            </div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all group-hover:shadow-primary/30">
+            CP
           </div>
-          <div className="hidden sm:block">
-            <span className="text-lg font-bold bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent">
-              Career<span className="text-primary">AI</span>
+          <div className="leading-tight">
+            <span className="block text-sm font-semibold tracking-tight text-foreground sm:text-base">
+              Career Pilot AI
             </span>
-            <span className="text-xs text-primary ml-1 font-medium">Beta</span>
+            <span className="hidden text-xs text-muted-foreground/80 sm:block">
+              AI career operating system
+            </span>
           </div>
         </Link>
 
-        {/* Desktop Navigation with Active State */}
-        <div className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const href = item.href as string;
-            const isActive =
-              pathname === href || (href !== "/" && pathname?.startsWith(href));
-            return (
-              <Link
-                key={item.label}
-                href={href}
-                className={cn(
-                  "relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg group",
-                  isActive
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                </span>
-                {isActive && (
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />
-                )}
-              </Link>
-            );
-          })}
+        <div className="hidden items-center rounded-full border border-border/40 bg-card/40 p-1 lg:flex backdrop-blur-sm">
+          <Link
+            href="/explore"
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-medium transition-all",
+              isRouteActive(pathname, "/explore")
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+            )}
+          >
+            Explore
+          </Link>
+          <Link
+            href="/#features"
+            className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground"
+          >
+            Features
+          </Link>
+          <NavDropdown label="Career Tools" items={careerTools} />
+          <NavDropdown
+            label="Resources"
+            items={resourceLinks}
+            active={["/blog", "/faq", "/contact", "/privacy", "/terms"].includes(
+              pathname ?? "",
+            )}
+          />
+          <Link
+            href="/pricing"
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-medium transition-all",
+              isRouteActive(pathname, "/pricing")
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+            )}
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/about"
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-medium transition-all",
+              isRouteActive(pathname, "/about")
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+            )}
+          >
+            About
+          </Link>
         </div>
 
-        {/* Desktop Right Actions */}
-        <div className="hidden md:flex items-center gap-3">
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              className="h-9 w-48 rounded-full border border-white/10 bg-white/5 px-3 pl-9 text-sm text-white transition-all placeholder:text-slate-500 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-300/20 lg:w-64"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          </form>
-
-          {/* Dark Mode Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
-            onClick={toggleDarkMode}
-          >
-            {isDarkMode ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
-          </Button>
-
-          {isAuthenticated ? (
+        <div className="hidden items-center gap-3 lg:flex">
+          <ThemeModeDropdown />
+          {!hasHydrated ? (
+            <div className="flex items-center gap-3" aria-label="Checking session">
+              <div className="h-9 w-24 animate-pulse rounded-lg bg-muted/60" />
+              <div className="h-9 w-9 animate-pulse rounded-lg bg-muted/60" />
+            </div>
+          ) : isAuthenticated ? (
             <>
-              {/* Notification Bell with Badge */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
-                  onClick={() => router.push("/dashboard/user/notifications")}
-                >
-                  <Bell className="w-5 h-5" />
-                </Button>
-                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-              </div>
-
-              {/* User Dropdown with Animation */}
+              <Button asChild variant="outline" size="sm" className="border-border/50 hover:border-border/80">
+                <Link href={dashboardHref}>
+                  <LayoutDashboard className="h-4 w-4" />
+                  Open Workspace
+                </Link>
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="h-9 rounded-full hover:bg-muted/50 transition-all duration-200 group"
+                    className="h-10 rounded-lg border border-border/50 bg-background/40 px-2 transition-all hover:border-border/80 hover:bg-muted/50"
+                    aria-label="Open profile menu"
                   >
-                    <div className="flex items-center gap-2">
-                      <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white text-sm font-semibold shadow-md group-hover:scale-105 transition-transform">
-                          {user?.name?.charAt(0).toUpperCase() || "U"}
-                        </div>
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
-                      </div>
-                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </div>
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                      {initials || "U"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground/60 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-64 animate-in slide-in-from-top-2"
-                >
-                  <DropdownMenuLabel className="flex flex-col gap-1">
-                    <div className="text-sm font-semibold">
-                      {user?.name || "User"}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {user?.email || "user@example.com"}
+                <DropdownMenuContent align="end" className="w-80 rounded-xl border-border/60 bg-popover p-3 shadow-xl shadow-elevation/10">
+                  <DropdownMenuLabel className="mb-2 rounded-lg bg-muted/35 p-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                        {initials || "U"}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          {displayName}
+                        </p>
+                        <p className="truncate text-xs font-normal text-muted-foreground/80">
+                          {user?.email || "Signed in"}
+                        </p>
+                      </div>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  {/* Quick Actions Submenu */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <Zap className="w-4 h-4 mr-2" />
-                      Quick Actions
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-48">
-                      {quickActions.map((action) => {
-                        const Icon = action.icon;
-                        return (
-                          <DropdownMenuItem key={action.label} asChild>
-                            <Link href={action.href}>
-                              <Icon className="w-4 h-4 mr-2" />
-                              {action.label}
-                            </Link>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/dashboard/user/settings"
-                      className="cursor-pointer"
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/dashboard/user/profile"
-                      className="cursor-pointer"
-                    >
-                      <User className="w-4 h-4 mr-2" />
+                  <DropdownMenuSeparator className="bg-border/40" />
+                  <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70">
+                    Account
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                    <Link href={getWorkspaceHref(dashboardHref, "settings/profile")}>
+                      <UserCircle className="mr-3 h-4 w-4 text-primary/80" />
                       Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-
-                  {/* Subscription Status */}
-                  <div className="px-2 py-1.5 text-xs">
-                    <div className="flex items-center justify-between text-muted-foreground">
-                      <span>Plan:</span>
-                      <span className="font-semibold text-primary">Pro</span>
-                    </div>
+                  <DropdownMenuSeparator className="bg-border/40 my-2" />
+                  <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70">
+                    Workspace
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                    <Link href={dashboardHref}>
+                      <LayoutDashboard className="mr-3 h-4 w-4 text-primary/80" />
+                      Workspace
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                    <Link href={getWorkspaceHref(dashboardHref, "notifications")}>
+                      <Bell className="mr-3 h-4 w-4 text-primary/80" />
+                      Notifications
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                    <Link href={getWorkspaceHref(dashboardHref, "settings")}>
+                      <Settings className="mr-3 h-4 w-4 text-primary/80" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <div className="px-1 py-2">
+                    <ThemeModeToggle />
                   </div>
-                  <DropdownMenuSeparator />
-
+                  <DropdownMenuSeparator className="bg-border/40 my-2" />
                   <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="cursor-pointer text-destructive focus:text-destructive"
+                    className="cursor-pointer rounded-lg p-3 text-destructive/80 transition-colors hover:bg-destructive/10"
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      void handleLogout();
+                    }}
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    <LogOut className="mr-3 h-4 w-4" />
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           ) : (
             <>
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 rounded-full hover:bg-primary/10"
-                >
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button
-                  size="sm"
-                  className="h-9 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg transition-all"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Start Free
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button asChild size="sm" className="font-semibold gap-2">
+                <Link href="/register">
+                  <Sparkles className="h-4 w-4" />
+                  Get Started
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </>
           )}
         </div>
 
-        {/* Mobile Menu Toggle */}
         <button
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle menu"
+          type="button"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border/50 bg-background/40 text-muted-foreground transition-all hover:border-border/80 hover:bg-muted/50 hover:text-foreground lg:hidden"
+          onClick={() => setIsMobileMenuOpen((open) => !open)}
+          aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMobileMenuOpen ? "true" : "false"}
+          aria-controls="public-mobile-navigation"
         >
-          {isMobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
+          {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </nav>
 
-      {/* Mobile Menu with Animation */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 bottom-0 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 animate-in slide-in-from-top-5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 overflow-y-auto h-full">
-            {/* Mobile Search */}
-            <form onSubmit={handleSearch} className="relative mb-6">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="w-full h-11 px-4 pl-11 text-base rounded-xl border border-border bg-background/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            </form>
-
-            {/* Mobile Navigation Items */}
-            <div className="space-y-1">
+        <div
+          id="public-mobile-navigation"
+          className="border-t border-border/40 bg-background/98 px-4 py-4 shadow-xl shadow-elevation/10 backdrop-blur-xl lg:hidden"
+        >
+          <div className="mx-auto max-w-7xl space-y-4">
+            <div className="grid gap-1">
               {navItems.map((item) => {
-                const Icon = item.icon;
+                const isActive = isRouteActive(pathname, item.href);
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors rounded-xl"
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      "rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                    )}
                   >
-                    <Icon className="w-5 h-5" />
                     {item.label}
                   </Link>
                 );
               })}
+              <div className="pt-2">
+                <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                  Career Tools
+                </p>
+                {careerTools.map((item) => (
+                  <Link
+                    key={`mobile-${item.label}`}
+                    href={item.href}
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground"
+                  >
+                    <item.icon className="h-4 w-4 text-primary" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="pt-2">
+                <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                  Resources
+                </p>
+                {resourceLinks.map((item) => (
+                  <Link
+                    key={`mobile-${item.label}`}
+                    href={item.href}
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                  >
+                    <item.icon className="h-4 w-4 text-primary" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
-            {/* Quick Actions for Authenticated Users */}
-            {isAuthenticated && (
-              <div className="mt-6">
-                <div className="px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Quick Actions
+            <div className="grid gap-2 border-t border-border/40 pt-4">
+              <ThemeModeToggle />
+              {!hasHydrated ? (
+                <div className="grid gap-2" aria-label="Checking session">
+                  <div className="h-11 animate-pulse rounded-lg bg-muted/60" />
+                  <div className="h-11 animate-pulse rounded-lg bg-muted/60" />
                 </div>
-                <div className="space-y-1">
-                  {quickActions.map((action) => {
-                    const Icon = action.icon;
-                    return (
-                      <Link
-                        key={action.label}
-                        href={action.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors rounded-xl"
-                      >
-                        <Icon className="w-5 h-5" />
-                        {action.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="border-t border-border/50 pt-6 mt-6 space-y-3">
-              {/* Dark Mode Toggle for Mobile */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start rounded-xl"
-                onClick={toggleDarkMode}
-              >
-                {isDarkMode ? (
-                  <Sun className="w-4 h-4 mr-2" />
-                ) : (
-                  <Moon className="w-4 h-4 mr-2" />
-                )}
-                {isDarkMode ? "Light Mode" : "Dark Mode"}
-              </Button>
-
-              {isAuthenticated ? (
+              ) : isAuthenticated ? (
                 <>
-                  <Link
-                    href="/dashboard/user/notifications"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start rounded-xl"
+                  <div className="rounded-xl border border-border/50 bg-muted/30 p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                        {initials || "U"}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          {displayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground/80">
+                          {user?.email || "Signed in"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button asChild className="w-full">
+                    <Link href={dashboardHref} onClick={closeMobileMenu}>
+                      <LayoutDashboard className="h-4 w-4" />
+                      Open Workspace
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link
+                      href={getWorkspaceHref(dashboardHref, "settings/profile")}
+                      onClick={closeMobileMenu}
                     >
-                      <Bell className="w-4 h-4 mr-2" />
+                      <UserCircle className="h-4 w-4" />
+                      Profile
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={dashboardHref} onClick={closeMobileMenu}>
+                      <LayoutDashboard className="h-4 w-4" />
+                      Workspace
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link
+                      href={getWorkspaceHref(dashboardHref, "notifications")}
+                      onClick={closeMobileMenu}
+                    >
+                      <Bell className="h-4 w-4" />
                       Notifications
-                    </Button>
-                  </Link>
-                  <Link
-                    href="/dashboard/user/settings"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start rounded-xl"
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link
+                      href={getWorkspaceHref(dashboardHref, "settings")}
+                      onClick={closeMobileMenu}
                     >
-                      <Settings className="w-4 h-4 mr-2" />
+                      <Settings className="h-4 w-4" />
                       Settings
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="w-full justify-start text-destructive hover:bg-destructive/10 rounded-xl"
-                    onClick={handleLogout}
+                    className="w-full"
+                    onClick={() => void handleLogout()}
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    <LogOut className="h-4 w-4" />
+                    Logout
                   </Button>
                 </>
               ) : (
-                <div className="space-y-3">
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full rounded-xl"
-                    >
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button
-                      size="sm"
-                      className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Join Network
-                    </Button>
-                  </Link>
-                </div>
+                <>
+                  <Button asChild className="w-full">
+                    <Link href="/register" onClick={closeMobileMenu}>
+                      <Sparkles className="h-4 w-4" />
+                      Get Started
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/login" onClick={closeMobileMenu}>
+                      Login
+                    </Link>
+                  </Button>
+                </>
               )}
             </div>
           </div>

@@ -1,9 +1,33 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { MessageSquarePlus, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 
-export const ChatEmptyState = () => (
+type ChatEmptyStateProps = {
+  onStart?: (initialMessage?: string) => void;
+};
+
+const starterPrompts = [
+  {
+    label: "Resume tips",
+    prompt: "Review my resume strategy and tell me what to improve first.",
+  },
+  {
+    label: "Interview prep",
+    prompt: "Help me prepare for an interview and give me a practice plan.",
+  },
+  {
+    label: "Career plan",
+    prompt: "Help me choose the next skills to learn for my target role.",
+  },
+  {
+    label: "Job search",
+    prompt: "Give me a focused job search strategy for the next two weeks.",
+  },
+];
+
+export const ChatEmptyState = ({ onStart }: ChatEmptyStateProps) => (
   <Card className="h-full border border-border shadow-sm">
     <CardContent className="flex h-full flex-col items-center justify-center gap-8 p-10 text-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 text-primary">
@@ -21,13 +45,16 @@ export const ChatEmptyState = () => (
       </div>
 
       <div className="grid w-full max-w-lg grid-cols-2 gap-3">
-        {["Strategy", "Resume", "Interviews", "Market"].map((tag) => (
-          <div
-            key={tag}
-            className="rounded-3xl border border-border bg-[#111827] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+        {starterPrompts.map((item) => (
+          <Button
+            key={item.label}
+            variant="outline"
+            className="h-auto rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.16em]"
+            onClick={() => onStart?.(item.prompt)}
           >
-            {tag}
-          </div>
+            <MessageSquarePlus className="h-4 w-4" />
+            {item.label}
+          </Button>
         ))}
       </div>
     </CardContent>

@@ -2,14 +2,12 @@
 
 import { Hero } from './sections/hero';
 import { Features } from './sections/features';
-import { Footer } from './sections/footer';
 
 export default function HomePage() {
   return (
-    <div className="relative w-full overflow-hidden bg-[#0B1120]">
+    <div className="relative w-full overflow-hidden bg-background">
       <Hero />
       <Features />
-      <Footer />
     </div>
   );
 }

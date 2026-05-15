@@ -7,7 +7,12 @@ export interface ChatbotMessage {
   timestamp: string; // ISO 8601
   metadata?: {
     tokens?: number;
-    provider?: 'OPENAI' | 'GEMINI';
+    provider?: 'GROQ';
+    confidence?: number;
+    fallback?: boolean;
+    reason?: string;
+    retryAfterMs?: number;
+    structured?: Record<string, any>;
   };
 }
 
@@ -15,6 +20,7 @@ export interface ChatbotContext {
   recentMessages: { role: string; content: string }[];
   conversationPhase: string;
   userProfile?: Record<string, any>;
+  careerContext?: Record<string, any>;
 }
 
 export interface ChatbotSessionResponse {
@@ -44,6 +50,26 @@ export interface CreateSessionRequest {
 export interface SendMessageRequest {
   content: string;
   context?: Record<string, any>;
+}
+
+export interface PublicChatMessage {
+  id?: string;
+  role: ChatbotRole;
+  content: string;
+  timestamp?: string;
+}
+
+export interface PublicChatRequest {
+  content: string;
+  recentMessages?: Array<Pick<PublicChatMessage, 'role' | 'content'>>;
+}
+
+export interface PublicChatResponse {
+  id: string;
+  role: 'assistant';
+  content: string;
+  timestamp: string;
+  metadata?: ChatbotMessage['metadata'];
 }
 
 export interface GetSessionsQuery {

@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,13 +11,15 @@ import {
   Lock,
   User,
   Loader2,
-  Github,
-  Facebook,
   AtSign,
+  ShieldCheck,
+  Sparkles,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/hooks/use-toast";
+import { cn } from "@/shared/lib/utils";
 import {
   loginSchema,
   signupSchema,
@@ -29,6 +31,11 @@ import {
   useSignupMutation,
 } from "../hooks/use-auth-mutations";
 import { useAuthStore } from "@/shared/store/auth-store";
+import { authApi } from "@/services/auth/auth-api";
+import {
+  getRoleDashboardHref,
+  resolveWorkspaceHref,
+} from "@/shared/lib/role-routing";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -38,9 +45,18 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
   const router = useRouter();
   const { toast } = useToast();
   const setSession = useAuthStore((state) => state.setSession);
+  const [nextPath, setNextPath] = useState("/");
+  const [demoRoleLoading, setDemoRoleLoading] = useState<"USER" | "ADMIN" | "MENTOR" | null>(null);
 
   const loginMutation = useLoginMutation();
   const signupMutation = useSignupMutation();
+
+  useEffect(() => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    if (next?.startsWith("/") && !next.startsWith("//")) {
+      setNextPath(next);
+    }
+  }, []);
 
   const loginForm = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -63,19 +79,11 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     try {
       const response = await loginMutation.mutateAsync(data);
       if (response.success) {
-        setSession({
-          accessToken: response.data.accessToken,
-          role: response.data.user.role,
-          user: {
-            name: response.data.user.firstName || "User",
-            email: response.data.user.email,
-          },
-        });
+        finishAuth(response);
         toast({
           title: "Welcome back",
           description: "Successfully signed in to your account",
         });
-        router.push("/");
       }
     } catch (err: any) {
       toast({
@@ -95,21 +103,13 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
       const response = await signupMutation.mutateAsync(registerData as any);
 
       if (response.success) {
-        setSession({
-          accessToken: response.data.accessToken,
-          role: response.data.user.role,
-          user: {
-            name: response.data.user.firstName || "User",
-            email: response.data.user.email,
-          },
-        });
+        finishAuth(response);
 
         toast({
           title: "Account created",
           description:
-            "Welcome to CareerAI! Your account has been created successfully.",
+            "Welcome to CareerAI! We sent you an email verification link.",
         });
-        router.push("/");
       }
     } catch (err: any) {
       toast({
@@ -123,16 +123,77 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     }
   });
 
+  const finishAuth = (response: Awaited<ReturnType<typeof authApi.demoLogin>>, fallbackPath = nextPath) => {
+    setSession({
+      accessToken: response.data.accessToken,
+      role: response.data.user.role,
+      user: {
+        id: response.data.user.id,
+        name:
+          response.data.user.name ||
+          [response.data.user.firstName, response.data.user.lastName]
+            .filter(Boolean)
+            .join(" ") ||
+          "Demo User",
+        email: response.data.user.email,
+      },
+    });
+
+    const rolePath = getRoleDashboardHref(response.data.user.role);
+
+    router.replace(
+      fallbackPath === "/" ? rolePath : resolveWorkspaceHref(rolePath, fallbackPath),
+    );
+  };
+
+  const onDemoLogin = async (role: "USER" | "ADMIN" | "MENTOR") => {
+    setDemoRoleLoading(role);
+    try {
+      const response = await authApi.demoLogin(role).catch((err) => {
+        if (role === "MENTOR" && [400, 404, 500].includes(err?.status)) {
+          return authApi.demoLogin("COACH");
+        }
+
+        throw err;
+      });
+      finishAuth(response);
+      toast({
+        variant: "success",
+        title: "Demo account ready",
+        description:
+          role === "ADMIN"
+            ? "Opening the demo admin dashboard."
+            : role === "MENTOR"
+              ? "Opening the demo mentor experience."
+              : "Opening the demo user workspace.",
+      });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Demo login failed",
+        description:
+          err.response?.data?.message ||
+          err.message ||
+          "Demo accounts may need to be seeded on the server.",
+      });
+    } finally {
+      setDemoRoleLoading(null);
+    }
+  };
+
   return (
     <div className="w-full">
       <motion.div
         initial={{ opacity: 0, scale: 0.98, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-card border border-border rounded-2xl shadow-lg p-8"
+        className="w-full rounded-xl border border-border/80 bg-card/95 p-4 shadow-xl shadow-elevation/10 backdrop-blur-xl sm:p-5 xl:p-6"
       >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
+        <div className="mb-5 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <User className="h-4 w-4" />
+          </div>
+          <h1 className="mb-1.5 text-2xl font-bold text-foreground sm:text-[1.7rem]">
             {mode === "login" ? "Welcome back" : "Create your account"}
           </h1>
           <p className="text-muted-foreground text-sm">
@@ -144,8 +205,8 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
         <AnimatePresence mode="wait">
           {mode === "login" ? (
-            <motion.form key="login" onSubmit={onLogin} className="space-y-6">
-              <div className="space-y-4">
+            <motion.form key="login" onSubmit={onLogin} className="space-y-4">
+              <div className="space-y-3.5">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium">
                     Email address
@@ -162,9 +223,17 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium">
-                    Password
-                  </label>
+                  <div className="flex items-center justify-between gap-3">
+                    <label htmlFor="password" className="text-sm font-medium">
+                      Password
+                    </label>
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -189,8 +258,8 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
               </Button>
             </motion.form>
           ) : (
-            <motion.form key="signup" onSubmit={onSignup} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+            <motion.form key="signup" onSubmit={onSignup} className="space-y-3.5">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="firstName" className="text-sm font-medium">
                     First name
@@ -243,7 +312,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="password" className="text-sm font-medium">
                     Password
@@ -286,47 +355,60 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           )}
         </AnimatePresence>
 
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-card px-4 text-muted-foreground">
-              Or continue with
-            </span>
-          </div>
-        </div>
+        {mode === "login" ? (
+          <>
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/80" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-card px-3 text-muted-foreground">
+                  Demo access
+                </span>
+              </div>
+            </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <Button variant="outline" className="h-11">
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="currentColor"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-          </Button>
-          <Button variant="outline" className="h-11">
-            <Github className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" className="h-11">
-            <Facebook className="h-4 w-4 text-blue-600" />
-          </Button>
-        </div>
+            <div className="mb-5 space-y-2.5 rounded-xl border border-primary/15 bg-primary/[0.045] p-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Demo workspaces</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Seeded accounts with realistic career data.
+                </p>
+              </div>
+              <div className="grid gap-2.5">
+                <DemoButton
+                  icon={Sparkles}
+                  label="User Workspace"
+                  badge="USER"
+                  description="Career tools and personal progress"
+                  loading={demoRoleLoading === "USER"}
+                  disabled={Boolean(demoRoleLoading) || loginMutation.isPending || signupMutation.isPending}
+                  onClick={() => onDemoLogin("USER")}
+                />
+                <DemoButton
+                  icon={ShieldCheck}
+                  label="Admin Workspace"
+                  badge="ADMIN"
+                  description="Analytics and platform monitoring"
+                  loading={demoRoleLoading === "ADMIN"}
+                  disabled={Boolean(demoRoleLoading) || loginMutation.isPending || signupMutation.isPending}
+                  onClick={() => onDemoLogin("ADMIN")}
+                />
+                <DemoButton
+                  icon={GraduationCap}
+                  label="Mentor Workspace"
+                  badge="MENTOR"
+                  description="Mentor-level review experience"
+                  loading={demoRoleLoading === "MENTOR"}
+                  disabled={Boolean(demoRoleLoading) || loginMutation.isPending || signupMutation.isPending}
+                  onClick={() => onDemoLogin("MENTOR")}
+                />
+              </div>
+            </div>
+          </>
+        ) : null}
 
-        <div className="mt-8 text-center text-sm">
+        <div className="mt-5 text-center text-sm">
           <span className="text-muted-foreground">
             {mode === "login"
               ? "Don't have an account?"
@@ -343,3 +425,49 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     </div>
   );
 };
+
+function DemoButton({
+  icon: Icon,
+  label,
+  badge,
+  description,
+  loading,
+  disabled,
+  onClick,
+}: {
+  icon: typeof Sparkles;
+  label: string;
+  badge: string;
+  description: string;
+  loading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      className={cn(
+        "group h-auto w-full justify-start rounded-lg border border-border/80 bg-background/55 p-2.5 text-left hover:border-primary/30 hover:bg-primary/10",
+        "items-start"
+      )}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-3">
+          <span className="min-w-0 text-sm font-semibold text-foreground">{label}</span>
+          <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
+            {badge}
+          </span>
+        </div>
+        <p className="mt-0.5 whitespace-normal text-xs font-normal leading-4 text-muted-foreground">
+          {description}
+        </p>
+      </div>
+    </Button>
+  );
+}

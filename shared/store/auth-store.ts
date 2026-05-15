@@ -1,33 +1,81 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  getAuthSessionKey,
+  hasActiveSessionState,
+  shouldRotateAuthSessionBoundary,
+  type SessionRole,
+  type SessionUser,
+} from "@/shared/lib/session-isolation";
 
 type AuthState = {
   accessToken: string | null;
-  role: "USER" | "ADMIN" | "MENTOR" | null;
-  user: { name: string; email: string } | null;
+  role: SessionRole;
+  user: SessionUser | null;
+  sessionKey: string | null;
+  sessionVersion: number;
+  hasHydrated: boolean;
   setSession: (payload: {
     accessToken: string;
     role: AuthState["role"];
     user?: AuthState["user"];
   }) => void;
+  setHydrated: (hasHydrated: boolean) => void;
   clearSession: () => void;
   logout: () => void;
 };
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      accessToken: null,
-      role: null,
-      user: null,
-      setSession: ({ accessToken, role, user }) =>
-        set({ accessToken, role, user }),
-      clearSession: () => set({ accessToken: null, role: null, user: null }),
-      logout: () => set({ accessToken: null, role: null, user: null }),
+export const useAuthStore = create<AuthState>()((set) => ({
+  accessToken: null,
+  role: null,
+  user: null,
+  sessionKey: null,
+  sessionVersion: 0,
+  hasHydrated: false,
+  setSession: ({ accessToken, role, user }) =>
+    set((current) => {
+      const nextSessionKey = getAuthSessionKey({ role, user });
+      const shouldRotateBoundary = shouldRotateAuthSessionBoundary(
+        current.sessionKey,
+        nextSessionKey,
+      );
+
+      return {
+        accessToken,
+        role,
+        user: user ?? null,
+        sessionKey: nextSessionKey,
+        sessionVersion: shouldRotateBoundary
+          ? current.sessionVersion + 1
+          : current.sessionVersion,
+      };
     }),
-    {
-      name: "career-ai-auth",
-      storage: createJSONStorage(() => localStorage),
-    },
-  ),
-);
+  setHydrated: (hasHydrated) => set({ hasHydrated }),
+  clearSession: () =>
+    set((current) => {
+      const hadSession = hasActiveSessionState(current);
+
+      return {
+        accessToken: null,
+        role: null,
+        user: null,
+        sessionKey: null,
+        sessionVersion: hadSession
+          ? current.sessionVersion + 1
+          : current.sessionVersion,
+      };
+    }),
+  logout: () =>
+    set((current) => {
+      const hadSession = hasActiveSessionState(current);
+
+      return {
+        accessToken: null,
+        role: null,
+        user: null,
+        sessionKey: null,
+        sessionVersion: hadSession
+          ? current.sessionVersion + 1
+          : current.sessionVersion,
+      };
+    }),
+}));
