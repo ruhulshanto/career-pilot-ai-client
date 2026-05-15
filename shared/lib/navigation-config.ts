@@ -33,10 +33,16 @@ export type NavGroup = {
 export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> = {
   USER: [
     {
+      id: "home",
+      label: "Home",
+      items: [
+        { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+      ]
+    },
+    {
       id: "intelligence",
       label: "Intelligence",
       items: [
-        { id: "dashboard", label: "Snapshot", icon: LayoutDashboard, path: "" },
         { id: "resume", label: "Resume Lab", icon: FileText, path: "resume" },
         { id: "skills", label: "Skill Matrix", icon: BarChart3, path: "skills" },
       ]
@@ -56,32 +62,89 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
       items: [
         { id: "mentor", label: "Mentorship", icon: UsersRound, path: "mentor" },
       ]
+    },
+    {
+      id: "system",
+      label: "System",
+      items: [
+        { id: "settings", label: "Settings / Preferences", icon: Settings, path: "settings" },
+      ]
     }
   ],
   MENTOR: [
     {
+      id: "home",
+      label: "Home",
+      items: [
+        { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+      ]
+    },
+    {
       id: "mentor-hub",
       label: "Mentor Hub",
       items: [
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "" },
         { id: "students", label: "My Students", icon: UsersRound, path: "students" },
         { id: "schedule", label: "Schedule", icon: Map, path: "schedule" },
         { id: "reviews", label: "Review Queue", icon: FileText, path: "reviews" },
+      ]
+    },
+    {
+      id: "intelligence",
+      label: "Intelligence",
+      items: [
+        { id: "resume", label: "Resume Lab", icon: FileText, path: "resume" },
+        { id: "skills", label: "Skill Matrix", icon: BarChart3, path: "skills" },
+      ]
+    },
+    {
+      id: "execution",
+      label: "Execution",
+      items: [
+        { id: "jobs", label: "Job Hub", icon: SearchCheck, path: "jobs" },
+        { id: "roadmap", label: "Career Roadmap", icon: Map, path: "roadmap" },
+        { id: "interview", label: "Interview Studio", icon: MessageSquare, path: "interview" },
+      ]
+    },
+    {
+      id: "system",
+      label: "System",
+      items: [
+        { id: "settings", label: "Settings / Preferences", icon: Settings, path: "settings" },
       ]
     }
   ],
   COACH: [
     {
+      id: "home",
+      label: "Home",
+      items: [
+        { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+      ]
+    },
+    {
       id: "coach-hub",
       label: "Coach Hub",
       items: [
-        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "" },
         { id: "students", label: "My Clients", icon: UsersRound, path: "students" },
         { id: "schedule", label: "Schedule", icon: Map, path: "schedule" },
+      ]
+    },
+    {
+      id: "system",
+      label: "System",
+      items: [
+        { id: "settings", label: "Settings / Preferences", icon: Settings, path: "settings" },
       ]
     }
   ],
   ADMIN: [
+    {
+      id: "home",
+      label: "Home",
+      items: [
+        { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+      ]
+    },
     {
       id: "admin-hub",
       label: "System Administration",
@@ -89,7 +152,31 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
         { id: "dashboard", label: "Overview", icon: LayoutDashboard, path: "" },
         { id: "users", label: "User Management", icon: UsersRound, path: "users" },
         { id: "analytics", label: "Platform Analytics", icon: BarChart3, path: "analytics" },
-        { id: "settings", label: "System Settings", icon: Settings, path: "settings" },
+        { id: "mentor", label: "Mentor Management", icon: UsersRound, path: "mentor" },
+      ]
+    },
+    {
+      id: "intelligence",
+      label: "Intelligence",
+      items: [
+        { id: "resume", label: "Resume Lab", icon: FileText, path: "resume" },
+        { id: "skills", label: "Skill Matrix", icon: BarChart3, path: "skills" },
+      ]
+    },
+    {
+      id: "execution",
+      label: "Execution",
+      items: [
+        { id: "jobs", label: "Job Hub", icon: SearchCheck, path: "jobs" },
+        { id: "roadmap", label: "Career Roadmap", icon: Map, path: "roadmap" },
+        { id: "interview", label: "Interview Studio", icon: MessageSquare, path: "interview" },
+      ]
+    },
+    {
+      id: "system",
+      label: "System",
+      items: [
+        { id: "settings", label: "Settings / Preferences", icon: Settings, path: "settings" },
       ]
     }
   ]

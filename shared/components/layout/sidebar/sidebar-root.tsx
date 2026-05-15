@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, LogOut, PanelLeftClose } from "lucide-react";
@@ -45,7 +46,7 @@ export function SidebarRoot() {
     <div className="relative flex h-full min-h-0 flex-col bg-card/40 backdrop-blur-md">
       {/* Brand Header */}
       <div className="flex h-14 shrink-0 items-center border-b border-border/40 px-4">
-        <div className="flex min-w-0 items-center gap-3">
+        <Link href="/" className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-80">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm shadow-primary/20 transition-transform hover:scale-105">
             <span className="text-sm font-bold text-primary-foreground">CP</span>
           </div>
@@ -54,7 +55,7 @@ export function SidebarRoot() {
               Career Pilot
             </span>
           )}
-        </div>
+        </Link>
       </div>
 
       {/* Navigation Areas */}

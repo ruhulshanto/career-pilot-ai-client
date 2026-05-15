@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -30,6 +30,7 @@ import {
   ThemeModeDropdown,
   ThemeModeToggle,
 } from "@/shared/components/theme/theme-mode-toggle";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { cn } from "@/shared/lib/utils";
 import { getRoleDashboardHref, getWorkspaceHref } from "@/shared/lib/role-routing";
 import { useAuthStore } from "@/shared/store/auth-store";
@@ -44,8 +45,6 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "Explore", href: "/explore" },
-  { label: "Features", href: "/#features" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ] as const;
@@ -261,21 +260,15 @@ export function Navbar() {
 
         <div className="hidden items-center rounded-full border border-border/40 bg-card/40 p-1 lg:flex backdrop-blur-sm">
           <Link
-            href="/explore"
+            href={isAuthenticated ? getWorkspaceHref(dashboardHref, "resume") : "/login?next=/dashboard/user/resume"}
             className={cn(
               "rounded-full px-4 py-2 text-sm font-medium transition-all",
-              isRouteActive(pathname, "/explore")
+              isRouteActive(pathname, "/resume")
                 ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
             )}
           >
-            Explore
-          </Link>
-          <Link
-            href="/#features"
-            className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground"
-          >
-            Features
+            Resume Analysis
           </Link>
           <NavDropdown label="Career Tools" items={careerTools} />
           <NavDropdown
@@ -311,6 +304,11 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <ThemeModeDropdown />
+          {isAuthenticated && (
+            <div className="relative">
+              <NotificationBell />
+            </div>
+          )}
           {!hasHydrated ? (
             <div className="flex items-center gap-3" aria-label="Checking session">
               <div className="h-9 w-24 animate-pulse rounded-lg bg-muted/60" />
@@ -357,7 +355,7 @@ export function Navbar() {
                   <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70">
                     Account
                   </DropdownMenuLabel>
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
                     <Link href={getWorkspaceHref(dashboardHref, "settings/profile")}>
                       <UserCircle className="mr-3 h-4 w-4 text-primary/80" />
                       Profile
@@ -367,19 +365,19 @@ export function Navbar() {
                   <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70">
                     Workspace
                   </DropdownMenuLabel>
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
                     <Link href={dashboardHref}>
                       <LayoutDashboard className="mr-3 h-4 w-4 text-primary/80" />
                       Workspace
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
                     <Link href={getWorkspaceHref(dashboardHref, "notifications")}>
                       <Bell className="mr-3 h-4 w-4 text-primary/80" />
                       Notifications
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50">
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
                     <Link href={getWorkspaceHref(dashboardHref, "settings")}>
                       <Settings className="mr-3 h-4 w-4 text-primary/80" />
                       Settings
@@ -390,7 +388,7 @@ export function Navbar() {
                   </div>
                   <DropdownMenuSeparator className="bg-border/40 my-2" />
                   <DropdownMenuItem
-                    className="cursor-pointer rounded-lg p-3 text-destructive/80 transition-colors hover:bg-destructive/10"
+                    className="cursor-pointer rounded-lg p-3 text-destructive/80 transition-colors hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
                     onSelect={(event) => {
                       event.preventDefault();
                       void handleLogout();
@@ -437,6 +435,18 @@ export function Navbar() {
         >
           <div className="mx-auto max-w-7xl space-y-4">
             <div className="grid gap-1">
+              <Link
+                href={isAuthenticated ? getWorkspaceHref(dashboardHref, "resume") : "/login?next=/dashboard/user/resume"}
+                onClick={closeMobileMenu}
+                className={cn(
+                  "rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                  isRouteActive(pathname, "/resume")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
+                )}
+              >
+                Resume Analysis
+              </Link>
               {navItems.map((item) => {
                 const isActive = isRouteActive(pathname, item.href);
                 return (

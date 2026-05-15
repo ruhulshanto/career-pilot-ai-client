@@ -28,13 +28,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       const expectedBase = getRoleDashboardHref(role);
 
       if (currentBase !== expectedBase) {
-        const nextPath =
-          expectedBase === '/dashboard/mentor' &&
-          /^\/dashboard\/(user|admin)\/mentor(\/|$)/.test(pathname)
-            ? expectedBase
-            : resolveWorkspaceHref(expectedBase, pathname);
-
-        router.replace(nextPath);
+        // If they try to access a route belonging to another role, redirect to their role root.
+        router.replace(expectedBase);
       }
     }
   }, [accessToken, hasHydrated, pathname, role, router]);

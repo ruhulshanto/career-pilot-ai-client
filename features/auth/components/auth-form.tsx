@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -141,9 +141,16 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
     const rolePath = getRoleDashboardHref(response.data.user.role);
 
-    router.replace(
-      fallbackPath === "/" ? rolePath : resolveWorkspaceHref(rolePath, fallbackPath),
-    );
+    let finalPath = rolePath;
+    if (fallbackPath && fallbackPath !== "/") {
+      if (fallbackPath.startsWith(rolePath)) {
+        finalPath = fallbackPath;
+      } else {
+        finalPath = rolePath;
+      }
+    }
+
+    router.replace(finalPath);
   };
 
   const onDemoLogin = async (role: "USER" | "ADMIN" | "MENTOR") => {
