@@ -17,7 +17,6 @@ import { getPublicImageUrl } from "@/shared/utils/image";
 import { ProfileImagePreview } from "@/shared/components/ui/profile-image-preview";
 
 import { SidebarGroup } from "./sidebar-group";
-import { WorkspaceSwitcher } from "./workspace-switcher";
 import { BrandLogo } from "../brand-logo";
 
 export function SidebarRoot() {
@@ -70,60 +69,59 @@ export function SidebarRoot() {
       </nav>
 
       {/* Bottom Footer Area */}
-      <div className="shrink-0 border-t border-border/40 p-3 bg-background/20 space-y-3">
-        {/* User Mini Profile */}
-        <Link
-          href={workspaceBase + "/settings"}
-          onClick={() => setMobileDrawerOpen(false)}
-          className={cn(
-            "group flex items-center gap-3 rounded-2xl p-2 transition-all hover:bg-accent/5 active:scale-95",
-            (isSidebarCollapsed && !isMobile) ? "justify-center" : ""
-          )}
-        >
-          <ProfileImagePreview avatarUrl={user?.avatarUrl} name={user?.name}>
-            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border/60 bg-muted shadow-sm ring-2 ring-border/20 transition-all group-hover:ring-accent/30">
-              {user?.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={getPublicImageUrl(user.avatarUrl) ?? ""}
-                  alt={user.firstName || "User"}
-                  className="h-full w-full object-cover transition-transform group-hover:scale-110"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-accent/10 text-accent text-xs font-bold">
-                  {(user?.firstName?.[0] || user?.email?.[0] || "U").toUpperCase()}
-                </div>
-              )}
-            </div>
-          </ProfileImagePreview>
-          
-          {(!isSidebarCollapsed || isMobile) && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-foreground transition-colors group-hover:text-accent">
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="truncate text-[11px] font-medium text-muted-foreground">
-                @{user?.username || "user"}
-              </p>
-            </div>
-          )}
-        </Link>
+      <div className="shrink-0 border-t border-border/40 p-3 bg-background/20 flex flex-col gap-2">
+        {/* User Mini Profile & Sign Out row */}
+        <div className={cn(
+          "flex items-center gap-2",
+          (isSidebarCollapsed && !isMobile) ? "flex-col" : "justify-between"
+        )}>
+          <Link
+            href={workspaceBase + "/settings"}
+            onClick={() => setMobileDrawerOpen(false)}
+            className={cn(
+              "group flex items-center gap-3 rounded-2xl p-2 transition-all hover:bg-accent/5 active:scale-95 min-w-0",
+              (isSidebarCollapsed && !isMobile) ? "justify-center w-full" : "flex-1"
+            )}
+          >
+            <ProfileImagePreview avatarUrl={user?.avatarUrl} name={user?.name}>
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border/60 bg-muted shadow-sm ring-2 ring-border/20 transition-all group-hover:ring-accent/30">
+                {user?.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={getPublicImageUrl(user.avatarUrl) ?? ""}
+                    alt={user.firstName || "User"}
+                    className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-accent/10 text-accent text-xs font-bold">
+                    {(user?.firstName?.[0] || user?.email?.[0] || "U").toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </ProfileImagePreview>
+            
+            {(!isSidebarCollapsed || isMobile) && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-foreground transition-colors group-hover:text-accent">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="truncate text-[11px] font-medium text-muted-foreground">
+                  @{user?.username || "user"}
+                </p>
+              </div>
+            )}
+          </Link>
 
-        <WorkspaceSwitcher isCollapsed={isSidebarCollapsed && !isMobile} />
-
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          className={cn(
-            "mt-2 h-9 w-full justify-start gap-3 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
-            (isSidebarCollapsed && !isMobile) ? "justify-center px-0" : "",
-          )}
-        >
-          <LogOut className="h-[18px] w-[18px]" />
-          {(!isSidebarCollapsed || isMobile) && (
-            <span className="text-sm font-medium">Sign out</span>
-          )}
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="h-10 w-10 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0 flex items-center justify-center"
+            title="Sign out"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+          </Button>
+        </div>
       </div>
 
       {/* Desktop Collapse Trigger */}
