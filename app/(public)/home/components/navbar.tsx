@@ -437,7 +437,7 @@ export function Navbar() {
       {isMobileMenuOpen && (
         <div
           id="public-mobile-navigation"
-          className="border-t border-border/40 bg-background/98 px-4 py-4 shadow-xl shadow-elevation/10 backdrop-blur-xl lg:hidden"
+          className="border-t border-border/40 bg-background/98 px-4 py-6 shadow-xl shadow-elevation/10 backdrop-blur-xl lg:hidden max-h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar"
         >
           <div className="mx-auto max-w-7xl space-y-4">
             <div className="grid gap-1">
@@ -552,12 +552,6 @@ export function Navbar() {
                     >
                       <UserCircle className="h-4 w-4" />
                       Profile
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href={dashboardHref} onClick={closeMobileMenu}>
-                      <LayoutDashboard className="h-4 w-4" />
-                      Workspace
                     </Link>
                   </Button>
                   <Button asChild variant="outline" className="w-full">
