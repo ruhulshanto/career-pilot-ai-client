@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useChatbotStore } from "@/shared/store/use-chatbot-store";
 import { useAuthStore } from "@/shared/store/auth-store";
-import { Plus, Loader2, AlertCircle, LogIn, Info, Trash2 } from "lucide-react";
+import { Plus, Loader2, AlertCircle, LogIn, Info, Trash2, ListChecks, X } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -67,6 +67,10 @@ export const ChatbotPanel = () => {
     useState<ChatbotSessionResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
+  const [isMultipleDeleteOpen, setIsMultipleDeleteOpen] = useState(false);
+  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   const sessionExpiredToastShown = useRef(false);
   const isSessionExpired = errorCode === "SESSION_EXPIRED";
   const sortedSessions = useMemo(() => {
@@ -199,6 +203,36 @@ export const ChatbotPanel = () => {
     }
   };
 
+  const handleToggleSelectSession = (id: string) => {
+    setSelectedSessionIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleMultipleDelete = async () => {
+    setIsDeletingMultiple(true);
+    try {
+      for (const id of selectedSessionIds) {
+        await deleteSession(id);
+      }
+      toast({
+        title: "Conversations deleted",
+        description: `Successfully deleted ${selectedSessionIds.length} conversations.`,
+      });
+      setIsSelectMode(false);
+      setSelectedSessionIds([]);
+      setIsMultipleDeleteOpen(false);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: "An error occurred while deleting the conversations.",
+      });
+    } finally {
+      setIsDeletingMultiple(false);
+    }
+  };
+
   const handleRenameSession = async (sessionId: string, title: string) => {
     try {
       await renameSession(sessionId, title);
@@ -243,20 +277,42 @@ export const ChatbotPanel = () => {
                 Manage active chat history
               </p>
             </div>
-            <Button
-              size="icon"
-              onClick={() => handleNewSession()}
-              disabled={isCreating}
-              variant="secondary"
-              className="h-11 w-11"
-              aria-label="New consultation"
-            >
-              {isCreating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                size="icon"
+                onClick={() => {
+                  setIsSelectMode(!isSelectMode);
+                  setSelectedSessionIds([]);
+                }}
+                variant={isSelectMode ? "default" : "secondary"}
+                className={cn(
+                  "h-11 w-11 transition-all duration-300 rounded-xl",
+                  isSelectMode && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                )}
+                aria-label="Toggle selection mode"
+                title={isSelectMode ? "Cancel selection" : "Select multiple"}
+              >
+                {isSelectMode ? (
+                  <X className="h-4 w-4" />
+                ) : (
+                  <ListChecks className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                size="icon"
+                onClick={() => handleNewSession()}
+                disabled={isCreating || isSelectMode}
+                variant="secondary"
+                className="h-11 w-11 rounded-xl"
+                aria-label="New consultation"
+              >
+                {isCreating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
 
           <ScrollArea className="min-w-0 flex-1 overflow-hidden">
@@ -280,7 +336,16 @@ export const ChatbotPanel = () => {
                       session={session}
                       isActive={activeSessionId === session.id}
                       isPinned={pinnedSessionIds.includes(session.id)}
-                      onClick={() => loadSession(session.id)}
+                      isSelectMode={isSelectMode}
+                      isSelected={selectedSessionIds.includes(session.id)}
+                      onToggleSelect={() => handleToggleSelectSession(session.id)}
+                      onClick={() => {
+                        if (isSelectMode) {
+                          handleToggleSelectSession(session.id);
+                        } else {
+                          loadSession(session.id);
+                        }
+                      }}
                       onRename={(title) =>
                         handleRenameSession(session.id, title)
                       }
@@ -294,6 +359,19 @@ export const ChatbotPanel = () => {
                   ))}
             </div>
           </ScrollArea>
+
+          {isSelectMode && selectedSessionIds.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border animate-in slide-in-from-bottom-2 duration-300 shrink-0">
+              <Button
+                variant="destructive"
+                className="w-full h-11 gap-2 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-bold"
+                onClick={() => setIsMultipleDeleteOpen(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete Selected ({selectedSessionIds.length})
+              </Button>
+            </div>
+          )}
         </aside>
 
         <main className={cn(
@@ -448,6 +526,43 @@ export const ChatbotPanel = () => {
             >
               Close
             </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isMultipleDeleteOpen}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingMultiple) setIsMultipleDeleteOpen(false);
+        }}
+      >
+        <AlertDialogContent>
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 text-destructive">
+              <Trash2 className="h-5 w-5" />
+            </div>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete multiple conversations?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete {selectedSessionIds.length} selected conversation{selectedSessionIds.length === 1 ? "" : "s"}? This will permanently remove their message history from your account. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={isDeletingMultiple}
+              onClick={() => setIsMultipleDeleteOpen(false)}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              loading={isDeletingMultiple}
+              onClick={handleMultipleDelete}
+            >
+              Delete All
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

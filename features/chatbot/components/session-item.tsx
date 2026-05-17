@@ -19,6 +19,9 @@ interface SessionItemProps {
   session: ChatbotSessionResponse;
   isActive: boolean;
   isPinned: boolean;
+  isSelectMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: () => void;
   onClick: () => void;
   onRename: (title: string) => Promise<void>;
   onTogglePin: () => void;
@@ -30,6 +33,9 @@ export const SessionItem = React.memo(function SessionItem({
   session,
   isActive,
   isPinned,
+  isSelectMode,
+  isSelected,
+  onToggleSelect,
   onClick,
   onRename,
   onTogglePin,
@@ -89,16 +95,33 @@ export const SessionItem = React.memo(function SessionItem({
       )}
     >
       <div className="flex h-full min-w-0 flex-1 basis-0 items-center gap-3 overflow-hidden">
-        <div
-          className={cn(
-            "flex h-10 w-10 flex-none items-center justify-center rounded-xl border transition-all duration-300",
-            isActive
-              ? "border-transparent bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-              : "border-border/60 bg-muted/40 text-foreground/30 group-hover:text-foreground/60",
-          )}
-        >
-          <MessageSquare className="h-5 w-5" />
-        </div>
+        {isSelectMode ? (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect();
+            }}
+            className={cn(
+              "flex h-6 w-6 flex-none items-center justify-center rounded-lg border transition-all duration-300 cursor-pointer",
+              isSelected
+                ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "border-border/80 bg-muted/20 text-transparent hover:border-primary/50",
+            )}
+          >
+            <Check className="h-4 w-4 text-primary-foreground" />
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "flex h-10 w-10 flex-none items-center justify-center rounded-xl border transition-all duration-300",
+              isActive
+                ? "border-transparent bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "border-border/60 bg-muted/40 text-foreground/30 group-hover:text-foreground/60",
+            )}
+          >
+            <MessageSquare className="h-5 w-5" />
+          </div>
+        )}
 
         {isRenaming ? (
           <Input
@@ -180,54 +203,56 @@ export const SessionItem = React.memo(function SessionItem({
           </Button>
         </div>
       ) : (
-        <div className={cn(
-          "flex h-9 flex-none items-center gap-0.5 transition-all duration-300",
-          isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
-        )}>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            onClick={onTogglePin}
-            className={cn(
-              "h-8 w-8 rounded-lg p-0 hover:bg-muted/40 transition-colors",
-              isPinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            )}
-            title={isPinned ? "Unpin" : "Pin"}
-          >
-            <Pin className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            onClick={onShare}
-            className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-            title="Share"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            onClick={startRename}
-            className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-            title="Rename"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            onClick={onDelete}
-            className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/15 transition-colors"
-            title="Delete"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        !isSelectMode && (
+          <div className={cn(
+            "flex h-9 flex-none items-center gap-0.5 transition-all duration-300",
+            isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+          )}>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={onTogglePin}
+              className={cn(
+                "h-8 w-8 rounded-lg p-0 hover:bg-muted/40 transition-colors",
+                isPinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+              title={isPinned ? "Unpin" : "Pin"}
+            >
+              <Pin className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={onShare}
+              className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+              title="Share"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={startRename}
+              className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+              title="Rename"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={onDelete}
+              className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/15 transition-colors"
+              title="Delete"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )
       )}
     </div>
   );
