@@ -166,7 +166,7 @@ function NavDropdown({
         align="center"
         className="w-[22rem] rounded-xl border-border/60 bg-popover p-3 shadow-xl shadow-elevation/10 backdrop-blur-xl"
       >
-        <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70 mb-1">
+        <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-heading font-normal text-muted-foreground/70 mb-1">
           {label}
         </DropdownMenuLabel>
         <div className="grid gap-1">
@@ -358,7 +358,7 @@ export function Navbar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-border/40" />
-                  <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70">
+                  <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-heading font-normal text-muted-foreground/70">
                     Account
                   </DropdownMenuLabel>
                   <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
@@ -368,7 +368,7 @@ export function Navbar() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-border/40 my-2" />
-                  <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-semibold text-muted-foreground/70">
+                  <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.15em] font-heading font-normal text-muted-foreground/70">
                     Workspace
                   </DropdownMenuLabel>
                   <DropdownMenuItem asChild className="cursor-pointer rounded-lg p-3 transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
@@ -472,7 +472,7 @@ export function Navbar() {
                 );
               })}
               <div className="pt-2">
-                <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                <p className="px-3 pb-2 text-xs font-heading font-normal uppercase tracking-[0.15em] text-muted-foreground/70">
                   Career Tools
                 </p>
                 {careerTools.map((item) => (
@@ -488,7 +488,7 @@ export function Navbar() {
                 ))}
               </div>
               <div className="pt-2">
-                <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                <p className="px-3 pb-2 text-xs font-heading font-normal uppercase tracking-[0.15em] text-muted-foreground/70">
                   Resources
                 </p>
                 {resourceLinks.map((item) => (

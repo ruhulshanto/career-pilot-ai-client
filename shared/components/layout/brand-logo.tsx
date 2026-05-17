@@ -33,7 +33,7 @@ export function BrandLogo({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
       className={cn(
-        "group flex min-w-0 items-center outline-none transition-all duration-300",
+        "group flex min-w-0 items-center outline-none transition-all duration-300 font-sans",
         isSidebar && collapsed ? "justify-center" : "gap-3",
         isHovered && "scale-[1.02]",
         className
