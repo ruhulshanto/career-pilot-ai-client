@@ -37,6 +37,7 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
       label: "Home",
       items: [
         { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+        { id: "copilot", label: "AI Copilot", icon: Bot, path: "chat" },
       ]
     },
     {
@@ -77,6 +78,7 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
       label: "Home",
       items: [
         { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+        { id: "copilot", label: "AI Copilot", icon: Bot, path: "chat" },
       ]
     },
     {
@@ -119,6 +121,7 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
       label: "Home",
       items: [
         { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+        { id: "copilot", label: "AI Copilot", icon: Bot, path: "chat" },
       ]
     },
     {
@@ -143,6 +146,7 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
       label: "Home",
       items: [
         { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
+        { id: "copilot", label: "AI Copilot", icon: Bot, path: "chat" },
       ]
     },
     {
