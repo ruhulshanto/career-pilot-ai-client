@@ -263,7 +263,7 @@ export const ChatbotPanel = () => {
 
   return (
     <Card className="h-[calc(100vh-14rem)] min-h-[600px] overflow-hidden border border-border shadow-sm flex flex-col">
-      <div className="grid h-full min-h-0 min-w-0 gap-px bg-border lg:grid-cols-[320px_minmax(0,1fr)] flex-1">
+      <div className="grid h-full min-h-0 min-w-0 gap-px bg-border lg:grid-cols-[380px_minmax(0,1fr)] flex-1">
         <aside className={cn(
           "min-w-0 flex-col bg-card p-6 h-full min-h-0",
           activeSessionId ? "hidden lg:flex" : "flex",
