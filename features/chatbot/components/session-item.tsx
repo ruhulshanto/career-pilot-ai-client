@@ -88,7 +88,7 @@ export const SessionItem = React.memo(function SessionItem({
   return (
     <div
       className={cn(
-        "group flex h-[72px] w-full max-w-full min-w-0 items-center justify-between gap-2 overflow-hidden rounded-2xl border px-3 py-2 transition-all duration-300",
+        "group flex h-14 w-full max-w-full min-w-0 items-center justify-between gap-2 overflow-hidden rounded-2xl border px-3 py-2 transition-all duration-300",
         isActive
           ? "border-primary/20 bg-primary/10 shadow-xl"
           : "border-transparent hover:bg-muted/40",
@@ -113,13 +113,13 @@ export const SessionItem = React.memo(function SessionItem({
         ) : (
           <div
             className={cn(
-              "flex h-10 w-10 flex-none items-center justify-center rounded-xl border transition-all duration-300",
+              "flex h-9 w-9 flex-none items-center justify-center rounded-xl border transition-all duration-300",
               isActive
                 ? "border-transparent bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                 : "border-border/60 bg-muted/40 text-foreground/30 group-hover:text-foreground/60",
             )}
           >
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="h-4 w-4" />
           </div>
         )}
 
@@ -139,14 +139,14 @@ export const SessionItem = React.memo(function SessionItem({
                 cancelRename();
               }
             }}
-            className="h-10 min-w-0 flex-1 basis-0 rounded-lg px-3 text-sm font-semibold"
+            className="h-9 min-w-0 flex-1 basis-0 rounded-lg px-3 text-sm font-semibold"
             aria-label="Conversation title"
           />
         ) : (
           <button
             type="button"
             onClick={onClick}
-            className="flex h-full min-w-0 flex-1 basis-0 flex-col justify-center overflow-hidden rounded-xl pr-2 text-left"
+            className="flex min-w-0 flex-1 basis-0 flex-col justify-center overflow-hidden rounded-xl pr-2 text-left"
           >
             <span className="flex w-full min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
               {isPinned && (
@@ -162,14 +162,6 @@ export const SessionItem = React.memo(function SessionItem({
               >
                 {title}
               </span>
-            </span>
-            <span
-              className={cn(
-                "mt-1 block w-full min-w-0 max-w-full truncate whitespace-nowrap text-[10px] font-bold uppercase leading-4 tracking-widest",
-                isActive ? "text-primary/70" : "text-foreground/30",
-              )}
-            >
-              {session.lastMessage || "Open Consultation"}
             </span>
           </button>
         )}
