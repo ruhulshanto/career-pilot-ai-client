@@ -115,31 +115,7 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
       ]
     }
   ],
-  COACH: [
-    {
-      id: "home",
-      label: "Home",
-      items: [
-        { id: "dashboard", label: "Dashboard Snapshot", icon: LayoutDashboard, path: "" },
-        { id: "copilot", label: "AI Copilot", icon: Bot, path: "chat" },
-      ]
-    },
-    {
-      id: "coach-hub",
-      label: "Coach Hub",
-      items: [
-        { id: "students", label: "My Clients", icon: UsersRound, path: "students" },
-        { id: "schedule", label: "Schedule", icon: Map, path: "schedule" },
-      ]
-    },
-    {
-      id: "system",
-      label: "System",
-      items: [
-        { id: "settings", label: "Settings / Preferences", icon: Settings, path: "settings" },
-      ]
-    }
-  ],
+
   ADMIN: [
     {
       id: "home",

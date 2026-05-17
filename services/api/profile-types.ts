@@ -10,7 +10,7 @@ export type ProfileSocialLinks = {
 export type UserProfile = {
   id: string;
   email?: string;
-  role?: "USER" | "ADMIN" | "COACH" | "MENTOR";
+  role?: "USER" | "ADMIN" | "MENTOR";
   username: string;
   firstName: string;
   lastName: string;

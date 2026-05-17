@@ -68,7 +68,7 @@ function PortfolioView({ portfolio }: { portfolio: CareerPortfolio }) {
   const name = `${portfolio.user.firstName} ${portfolio.user.lastName}`;
   const links = portfolio.user.socialLinks ?? {};
   const isMentorProfile =
-    portfolio.user.role === "MENTOR" || portfolio.user.role === "COACH";
+    portfolio.user.role === "MENTOR";
 
   return (
     <main className="min-h-screen bg-background text-foreground">

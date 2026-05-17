@@ -11,7 +11,7 @@ export type AuthUser = {
   avatarUrl?: string | null;
   emailVerifiedAt?: string | null;
   isDemo?: boolean;
-  role: 'USER' | 'ADMIN' | 'COACH' | 'MENTOR';
+  role: 'USER' | 'ADMIN' | 'MENTOR';
 };
 
 export type AuthResponse = {
@@ -29,7 +29,7 @@ export const authApi = {
     return response.data;
   },
 
-  demoLogin: async (role: 'USER' | 'ADMIN' | 'COACH' | 'MENTOR'): Promise<AuthResponse> => {
+  demoLogin: async (role: 'USER' | 'ADMIN' | 'MENTOR'): Promise<AuthResponse> => {
     const response = await apiClient.post('/auth/demo-login', { role });
     return response.data;
   },

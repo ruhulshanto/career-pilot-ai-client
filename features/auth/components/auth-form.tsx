@@ -166,13 +166,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
   const onDemoLogin = async (role: "USER" | "ADMIN" | "MENTOR") => {
     setDemoRoleLoading(role);
     try {
-      const response = await authApi.demoLogin(role).catch((err) => {
-        if (role === "MENTOR" && [400, 404, 500].includes(err?.status)) {
-          return authApi.demoLogin("COACH");
-        }
-
-        throw err;
-      });
+      const response = await authApi.demoLogin(role);
       finishAuth(response);
       toast({
         variant: "success",

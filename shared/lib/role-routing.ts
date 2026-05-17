@@ -1,8 +1,8 @@
-export type WorkspaceRole = "USER" | "ADMIN" | "COACH" | "MENTOR" | null | undefined;
+export type WorkspaceRole = "USER" | "ADMIN" | "MENTOR" | null | undefined;
 
 export function getRoleDashboardHref(role: WorkspaceRole) {
   if (role === "ADMIN") return "/dashboard/admin";
-  if (role === "COACH" || role === "MENTOR") return "/dashboard/mentor";
+  if (role === "MENTOR") return "/dashboard/mentor";
   return "/dashboard/user";
 }
 
@@ -26,6 +26,6 @@ export function resolveWorkspaceHref(base: string, href?: string | null) {
 
 export function getRoleWorkspaceLabel(role: WorkspaceRole) {
   if (role === "ADMIN") return "Admin Workspace";
-  if (role === "COACH" || role === "MENTOR") return "Mentor Workspace";
+  if (role === "MENTOR") return "Mentor Workspace";
   return "User Workspace";
 }

@@ -118,7 +118,6 @@ export function AdminUsersManager() {
               <option value="all">All Roles</option>
               <option value="USER">User</option>
               <option value="MENTOR">Mentor</option>
-              <option value="COACH">Coach</option>
               <option value="ADMIN">Admin</option>
             </select>
 
@@ -262,7 +261,6 @@ export function AdminUsersManager() {
                           "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase",
                           user.role === "ADMIN" ? "bg-destructive/10 text-destructive" :
                           user.role === "MENTOR" ? "bg-accent/10 text-accent" :
-                          user.role === "COACH" ? "bg-purple-500/10 text-purple-500" :
                           "bg-primary/10 text-primary"
                         )}>
                           {user.role}
