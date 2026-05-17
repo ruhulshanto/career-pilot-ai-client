@@ -1,10 +1,9 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import {
   Check,
   MessageSquare,
-  MoreVertical,
   Pencil,
   Pin,
   Share2,
@@ -14,12 +13,6 @@ import {
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
 import type { ChatbotSessionResponse } from "@/shared/types/chatbot";
 
 interface SessionItemProps {
@@ -187,54 +180,54 @@ export const SessionItem = React.memo(function SessionItem({
           </Button>
         </div>
       ) : (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-9 w-9 flex-none rounded-xl p-0 text-foreground/35 opacity-70 hover:bg-muted/40 hover:text-foreground group-hover:opacity-100 data-[state=open]:bg-muted/40 data-[state=open]:text-foreground data-[state=open]:opacity-100"
-              aria-label="Conversation actions"
-              title="Conversation actions"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            sideOffset={6}
-            className="w-40 rounded-xl border-border/60 bg-card/95 p-1.5 shadow-2xl shadow-elevation/15 backdrop-blur"
+        <div className={cn(
+          "flex h-9 flex-none items-center gap-0.5 transition-all duration-300",
+          isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+        )}>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={onTogglePin}
+            className={cn(
+              "h-8 w-8 rounded-lg p-0 hover:bg-muted/40 transition-colors",
+              isPinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            )}
+            title={isPinned ? "Unpin" : "Pin"}
           >
-            <DropdownMenuItem
-              onSelect={startRename}
-              className="gap-2 rounded-lg px-2.5 py-2"
-            >
-              <Pencil className="h-4 w-4 text-foreground/60" />
-              Rename
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={onTogglePin}
-              className="gap-2 rounded-lg px-2.5 py-2"
-            >
-              <Pin className="h-4 w-4 text-foreground/60" />
-              {isPinned ? "Unpin" : "Pin"}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={onShare}
-              className="gap-2 rounded-lg px-2.5 py-2"
-            >
-              <Share2 className="h-4 w-4 text-foreground/60" />
-              Share
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={onDelete}
-              className="gap-2 rounded-lg px-2.5 py-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <Pin className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={onShare}
+            className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            title="Share"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={startRename}
+            className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            title="Rename"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={onDelete}
+            className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/15 transition-colors"
+            title="Delete"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       )}
     </div>
   );
