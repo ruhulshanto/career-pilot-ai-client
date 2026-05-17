@@ -88,41 +88,43 @@ export const SessionItem = React.memo(function SessionItem({
   return (
     <div
       className={cn(
-        "group flex h-14 w-full max-w-full min-w-0 items-center justify-between gap-2 overflow-hidden rounded-2xl border px-3 py-2 transition-all duration-300",
+        "group flex h-12 w-full max-w-full min-w-0 items-center gap-2 overflow-hidden rounded-xl border px-2.5 py-0 transition-all duration-300",
         isActive
-          ? "border-primary/20 bg-primary/10 shadow-xl"
+          ? "border-primary/20 bg-primary/10 shadow-lg"
           : "border-transparent hover:bg-muted/40",
       )}
     >
-      <div className="flex h-full min-w-0 flex-1 basis-0 items-center gap-3 overflow-hidden">
-        {isSelectMode ? (
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleSelect();
-            }}
-            className={cn(
-              "flex h-6 w-6 flex-none items-center justify-center rounded-lg border transition-all duration-300 cursor-pointer",
-              isSelected
-                ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "border-border/80 bg-muted/20 text-transparent hover:border-primary/50",
-            )}
-          >
-            <Check className="h-4 w-4 text-primary-foreground" />
-          </div>
-        ) : (
-          <div
-            className={cn(
-              "flex h-9 w-9 flex-none items-center justify-center rounded-xl border transition-all duration-300",
-              isActive
-                ? "border-transparent bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "border-border/60 bg-muted/40 text-foreground/30 group-hover:text-foreground/60",
-            )}
-          >
-            <MessageSquare className="h-4 w-4" />
-          </div>
-        )}
+      {/* Left: icon or checkbox */}
+      {isSelectMode ? (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect();
+          }}
+          className={cn(
+            "flex h-5 w-5 flex-none cursor-pointer items-center justify-center rounded-md border transition-all duration-200",
+            isSelected
+              ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
+              : "border-border/80 bg-muted/20 text-transparent hover:border-primary/50",
+          )}
+        >
+          <Check className="h-3 w-3 text-primary-foreground" />
+        </div>
+      ) : (
+        <div
+          className={cn(
+            "flex h-8 w-8 flex-none items-center justify-center rounded-lg border transition-all duration-200",
+            isActive
+              ? "border-transparent bg-primary text-primary-foreground shadow-md shadow-primary/20"
+              : "border-border/50 bg-muted/30 text-foreground/30 group-hover:text-foreground/60",
+          )}
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+        </div>
+      )}
 
+      {/* Center: title / rename input — takes all remaining space */}
+      <div className="min-w-0 flex-1 overflow-hidden">
         {isRenaming ? (
           <Input
             ref={inputRef}
@@ -139,29 +141,28 @@ export const SessionItem = React.memo(function SessionItem({
                 cancelRename();
               }
             }}
-            className="h-9 min-w-0 flex-1 basis-0 rounded-lg px-3 text-sm font-semibold"
+            className="h-8 w-full rounded-lg px-2 text-sm font-semibold"
             aria-label="Conversation title"
           />
         ) : (
           <button
             type="button"
             onClick={onClick}
-            className="flex min-w-0 flex-1 basis-0 flex-col justify-center overflow-hidden rounded-xl pr-2 text-left"
+            className="flex w-full min-w-0 items-center gap-1 text-left"
           >
-            <span className="flex w-full min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
-              {isPinned && (
-                <Pin className="h-3 w-3 flex-none text-primary/80" />
+            {isPinned && (
+              <Pin className="h-3 w-3 flex-none text-primary/80" />
+            )}
+            <span
+              className={cn(
+                "block min-w-0 flex-1 truncate text-sm font-semibold leading-none tracking-tight transition-colors",
+                isActive
+                  ? "text-primary"
+                  : "text-foreground/65 group-hover:text-foreground",
               )}
-              <span
-                className={cn(
-                  "block min-w-0 flex-1 truncate whitespace-nowrap text-sm font-bold leading-5 transition-colors",
-                  isActive
-                    ? "text-primary"
-                    : "text-foreground/70 group-hover:text-foreground",
-                )}
-              >
-                {title}
-              </span>
+              title={title}
+            >
+              {title}
             </span>
           </button>
         )}
