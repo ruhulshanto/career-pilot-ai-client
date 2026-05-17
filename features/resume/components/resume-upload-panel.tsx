@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,6 +37,7 @@ import {
 } from "@/features/dashboard/utils/dashboard-query-sync";
 import { resumeQueryKeys } from "../api/resume-query-keys";
 import type { ProcessingStatus } from "@/services/api/resume";
+import { PageLoading, TableLoading } from "@/shared/components/loading/loading-system";
 
 const ACTIVE_STATUSES: ProcessingStatus[] = ["PENDING", "PROCESSING"];
 const TERMINAL_STATUSES: ProcessingStatus[] = ["COMPLETED", "FAILED"];
@@ -201,10 +202,9 @@ export function ResumeUploadPanel({ mode = "compact" }: ResumeUploadPanelProps) 
           </div>
         ) : isProcessing ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-accent/20 bg-accent/10 p-10 text-center">
-            <Loader2 className="h-10 w-10 animate-spin text-accent" />
             <div>
               <p className="text-lg font-semibold text-foreground">
-                Resume analysis in progress
+                Resume analysis in progress...
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 Status: {resume?.status ?? "QUEUED"}. This panel refreshes
@@ -215,9 +215,7 @@ export function ResumeUploadPanel({ mode = "compact" }: ResumeUploadPanelProps) 
         ) : resume ? (
           <AnalysisResult resume={resume} onReset={handleReset} />
         ) : (
-          <div className="flex items-center justify-center p-10">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+          <PageLoading title={false} grid={true} table={false} />
         )}
 
         {mode === "center" && (
@@ -273,14 +271,15 @@ function ResumeHistory({
             Keep your active resume history clean and dashboard-ready.
           </p>
         </div>
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
       </div>
 
       {isError ? (
         <p className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-muted-foreground">
           Unable to load resume history.
         </p>
-      ) : resumes.length === 0 && !isLoading ? (
+      ) : isLoading ? (
+        <TableLoading rows={2} columns={1} />
+      ) : resumes.length === 0 ? (
         <p className="rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
           Uploaded resumes will appear here after analysis is queued.
         </p>

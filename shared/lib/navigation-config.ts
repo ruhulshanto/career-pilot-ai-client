@@ -10,7 +10,8 @@ import {
   SearchCheck,
   UsersRound,
   Bot,
-  UserCircle
+  UserCircle,
+  Server
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { WorkspaceRole } from "./role-routing";
@@ -129,10 +130,10 @@ export const NAVIGATION_CONFIG: Record<NonNullable<WorkspaceRole>, NavGroup[]> =
       id: "admin-hub",
       label: "System Administration",
       items: [
-        { id: "dashboard", label: "Overview", icon: LayoutDashboard, path: "" },
         { id: "users", label: "User Management", icon: UsersRound, path: "users" },
         { id: "analytics", label: "Platform Analytics", icon: BarChart3, path: "analytics" },
         { id: "mentor", label: "Mentor Management", icon: UsersRound, path: "mentor" },
+        { id: "system-health", label: "System Health & Infrastructure", icon: Server, path: "system" },
       ]
     },
     {

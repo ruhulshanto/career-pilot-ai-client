@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Search, 
   MoreHorizontal, 
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import { adminApi } from "@/services/api/admin";
-import { useDebounce } from "@/shared/hooks/use-debounce";
+import { useToast } from "@/shared/hooks/use-toast";
 import { cn } from "@/shared/lib/utils";
 import { getPublicImageUrl } from "@/shared/utils/image";
 
@@ -28,6 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { TableLoading } from "@/shared/components/loading/loading-system";
 
 import {
   DropdownMenu,
@@ -37,7 +38,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/shared/components/ui/alert-dialog";
+
 import { ProfileImagePreview } from "@/shared/components/ui/profile-image-preview";
+import { AdminUserProfileModal } from "./admin-user-profile-modal";
+import { AdminUserActivityModal } from "./admin-user-activity-modal";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 
 export function AdminUsersManager() {
   const [search, setSearch] = useState("");
@@ -46,7 +61,13 @@ export function AdminUsersManager() {
   const [page, setPage] = useState(1);
   const limit = 10;
 
+  const [selectedDetailUserId, setSelectedDetailUserId] = useState<string | null>(null);
+  const [selectedActivityUser, setSelectedActivityUser] = useState<{ id: string; username: string } | null>(null);
+  const [selectedSuspendUser, setSelectedSuspendUser] = useState<{ id: string; username: string; isActive: boolean; deletedAt?: string | null } | null>(null);
+
   const debouncedSearch = useDebounce(search, 500);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const getRelativeTime = (dateStr: string) => {
     const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
@@ -69,7 +90,29 @@ export function AdminUsersManager() {
         role: role !== "all" ? role : undefined,
         status: status !== "all" ? status : undefined,
       }),
-    refetchInterval: 60_000, // Refetch every minute
+    refetchInterval: 60_000,
+  });
+
+  const suspendMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      adminApi.updateUserStatus(id, isActive),
+    onSuccess: (data) => {
+      toast({
+        variant: "success",
+        title: `Account ${data.isActive ? "Restored" : "Suspended"}`,
+        description: `User account has been successfully ${data.isActive ? "restored to active status" : "suspended"}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setSelectedSuspendUser(null);
+    },
+    onError: (err: any) => {
+      toast({
+        variant: "destructive",
+        title: "Action Failed",
+        description: err.response?.data?.message || err.message || "Failed to update user account status.",
+      });
+      setSelectedSuspendUser(null);
+    },
   });
 
   const handleResetFilters = () => {
@@ -78,6 +121,8 @@ export function AdminUsersManager() {
     setStatus("all");
     setPage(1);
   };
+
+  if (query.isLoading) return <TableLoading rows={5} columns={4} />;
 
   return (
     <Card className="rounded-2xl border-border/60 bg-card shadow-sm">
@@ -131,6 +176,7 @@ export function AdminUsersManager() {
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
               <option value="unverified">Unverified</option>
               <option value="deleted">Deleted</option>
             </select>
@@ -162,36 +208,7 @@ export function AdminUsersManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
-              {query.isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-muted/60" />
-                        <div className="space-y-2">
-                          <div className="h-4 w-32 rounded bg-muted/60" />
-                          <div className="h-3 w-40 rounded bg-muted/40" />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        <div className="h-5 w-16 rounded-full bg-muted/60" />
-                        <div className="h-4 w-20 rounded bg-muted/40" />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        <div className="h-4 w-24 rounded bg-muted/60" />
-                        <div className="h-4 w-32 rounded bg-muted/40" />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="inline-block h-8 w-8 rounded-lg bg-muted/60" />
-                    </td>
-                  </tr>
-                ))
-              ) : query.isError ? (
+              {query.isError ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
                     <ShieldAlert className="mx-auto h-8 w-8 text-destructive/50 mb-3" />
@@ -270,6 +287,10 @@ export function AdminUsersManager() {
                           <span className="flex items-center gap-1 text-[11px] text-destructive font-medium">
                             <ShieldAlert className="h-3 w-3" /> Deleted
                           </span>
+                        ) : !user.isActive ? (
+                          <span className="flex items-center gap-1 text-[11px] text-destructive font-semibold">
+                            <ShieldAlert className="h-3 w-3" /> Suspended
+                          </span>
                         ) : user.emailVerifiedAt ? (
                           <span className="flex items-center gap-1 text-[11px] text-emerald-500 font-medium">
                             <ShieldCheck className="h-3 w-3" /> Verified
@@ -301,27 +322,41 @@ export function AdminUsersManager() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
                           >
-                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 rounded-xl border-border/40 shadow-xl backdrop-blur-xl bg-background/95">
-                          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                        <DropdownMenuContent align="end" className="w-44 rounded-xl border-border/40 shadow-xl backdrop-blur-xl bg-background/95 p-1.5">
+                          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground px-2 py-1.5">
                             @{user.username}
                           </DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="cursor-pointer">
+                          <DropdownMenuSeparator className="my-1" />
+                          <DropdownMenuItem 
+                            className="cursor-pointer rounded-lg px-2 py-1.5 text-xs font-medium"
+                            onClick={() => setSelectedDetailUserId(user.id)}
+                          >
                             View Profile
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer">
+                          <DropdownMenuItem 
+                            className="cursor-pointer rounded-lg px-2 py-1.5 text-xs font-medium"
+                            onClick={() => setSelectedActivityUser({ id: user.id, username: user.username })}
+                          >
                             Activity Logs
                           </DropdownMenuItem>
                           {user.role !== "ADMIN" && (
                             <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
-                                {user.deletedAt ? "Restore Account" : "Suspend Account"}
+                              <DropdownMenuSeparator className="my-1" />
+                              <DropdownMenuItem 
+                                className="cursor-pointer rounded-lg px-2 py-1.5 text-xs font-medium text-destructive focus:text-destructive focus:bg-destructive/10"
+                                onClick={() => setSelectedSuspendUser({
+                                  id: user.id,
+                                  username: user.username,
+                                  isActive: user.isActive,
+                                  deletedAt: user.deletedAt
+                                })}
+                              >
+                                {user.deletedAt ? "Restore Account" : user.isActive ? "Suspend Account" : "Un-suspend Account"}
                               </DropdownMenuItem>
                             </>
                           )}
@@ -375,6 +410,66 @@ export function AdminUsersManager() {
           </div>
         )}
       </CardContent>
+
+      {/* Modals & Dialogs */}
+      <AdminUserProfileModal 
+        userId={selectedDetailUserId} 
+        onClose={() => setSelectedDetailUserId(null)} 
+      />
+
+      <AdminUserActivityModal 
+        userId={selectedActivityUser?.id ?? null} 
+        username={selectedActivityUser?.username ?? ""} 
+        onClose={() => setSelectedActivityUser(null)} 
+      />
+
+      <AlertDialog open={!!selectedSuspendUser} onOpenChange={(open) => !open && setSelectedSuspendUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {selectedSuspendUser?.deletedAt 
+                ? "Restore Deleted Account?" 
+                : selectedSuspendUser?.isActive 
+                  ? "Suspend User Account?" 
+                  : "Un-suspend User Account?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedSuspendUser?.deletedAt 
+                ? `Are you sure you want to restore @${selectedSuspendUser?.username}? They will regain full access to the platform.`
+                : selectedSuspendUser?.isActive 
+                  ? `Are you sure you want to suspend @${selectedSuspendUser?.username}? They will be immediately logged out and blocked from accessing authenticated platform features.`
+                  : `Are you sure you want to restore active status for @${selectedSuspendUser?.username}? They will be able to log in and access the platform again.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={suspendMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={cn(
+                selectedSuspendUser?.isActive ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "bg-emerald-500 hover:bg-emerald-600 text-white"
+              )}
+              disabled={suspendMutation.isPending}
+              onClick={() => {
+                if (selectedSuspendUser) {
+                  suspendMutation.mutate({
+                    id: selectedSuspendUser.id,
+                    isActive: !selectedSuspendUser.isActive
+                  });
+                }
+              }}
+            >
+              {suspendMutation.isPending ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+              ) : selectedSuspendUser?.deletedAt ? (
+                "Restore Account"
+              ) : selectedSuspendUser?.isActive ? (
+                "Yes, Suspend Account"
+              ) : (
+                "Yes, Un-suspend Account"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

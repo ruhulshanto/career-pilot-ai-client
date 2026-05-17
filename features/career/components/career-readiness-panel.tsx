@@ -5,6 +5,7 @@ import { ArrowRight, Bot, FileText, MessageSquare, Route } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import type { CareerContext } from "@/services/api/career";
+import { CardGridLoading } from "@/shared/components/loading/loading-system";
 
 const readinessItems = [
   { key: "resume", label: "Resume", icon: FileText },
@@ -141,7 +142,7 @@ export function CareerReadinessPanel({
           </p>
           <Button asChild className="mt-4 h-11 w-full">
             <Link href={context.nextAction.href}>
-              Continue
+               Continue
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -152,33 +153,7 @@ export function CareerReadinessPanel({
 }
 
 export function CareerReadinessPanelSkeleton() {
-  return (
-    <Card className="border-primary/15">
-      <CardContent className="space-y-5 p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              Career Readiness
-            </p>
-            <div className="mt-3 h-7 w-56 animate-pulse rounded-lg bg-muted" />
-          </div>
-          <div className="h-10 w-48 animate-pulse rounded-lg bg-muted" />
-        </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          {[0, 1, 2].map((item) => (
-            <div
-              key={item}
-              className="rounded-xl border border-border/70 bg-muted/25 p-4"
-            >
-              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-              <div className="mt-5 h-8 w-16 animate-pulse rounded bg-muted" />
-              <div className="mt-4 h-2 animate-pulse rounded-full bg-muted" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <CardGridLoading count={3} />;
 }
 
 export function CareerReadinessPanelFallback({

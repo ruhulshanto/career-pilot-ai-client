@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,6 +18,7 @@ import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/hooks/use-toast";
 import { formatRelativeTime } from "@/features/dashboard/utils/dashboard-format";
 import { mentorApi, type MentorReview } from "@/services/api/mentor";
+import { PageLoading } from "@/shared/components/loading/loading-system";
 
 const queryKeys = {
   mentor: ["mentor", "me"] as const,
@@ -69,6 +70,10 @@ export function MentorUserCenter() {
     },
   });
 
+  if (mentorQuery.isLoading || reviewsQuery.isLoading) {
+    return <PageLoading title={true} grid={false} table={true} />;
+  }
+
   const mentor = mentorQuery.data?.mentor;
   const sessions = mentorQuery.data?.sessions ?? [];
   const reviews = reviewsQuery.data ?? [];
@@ -81,9 +86,7 @@ export function MentorUserCenter() {
             <CardTitle className="text-lg">Assigned mentor</CardTitle>
           </CardHeader>
           <CardContent className="p-5">
-            {mentorQuery.isLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            ) : mentor ? (
+            {mentor ? (
               <div className="space-y-5">
                 <div className="flex items-start gap-4">
                   <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-primary/20 bg-primary/10">
@@ -154,7 +157,7 @@ export function MentorUserCenter() {
               })}
             </div>
             <Input
-              value={message}
+               value={message}
               onChange={(event) => setMessage(event.target.value)}
               placeholder="What should your mentor focus on?"
               className="h-12 rounded-2xl"
@@ -233,9 +236,7 @@ export function MentorUserCenter() {
           <CardTitle className="text-lg">Mentor feedback timeline</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 p-5">
-          {reviewsQuery.isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          ) : reviews.length === 0 ? (
+          {reviews.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Reviews and threaded mentor comments will appear here.
             </p>

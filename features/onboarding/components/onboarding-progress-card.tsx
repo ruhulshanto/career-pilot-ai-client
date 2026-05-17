@@ -28,6 +28,7 @@ import {
   onboardingQueryKeys,
   type OnboardingProgress,
 } from "../api/onboarding-api";
+import { CardGridLoading } from "@/shared/components/loading/loading-system";
 
 export function OnboardingProgressCard() {
   const queryClient = useQueryClient();
@@ -53,13 +54,7 @@ export function OnboardingProgressCard() {
   const progress = progressQuery.data;
 
   if (progressQuery.isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center p-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <CardGridLoading count={1} />;
   }
 
   if (!progress || progress.isComplete || progress.isSkipped) return null;

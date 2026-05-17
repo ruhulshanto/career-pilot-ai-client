@@ -38,6 +38,7 @@ import {
 } from "../lib/profile-payload";
 import { getPublicImageUrl } from "@/shared/utils/image";
 import { ProfileImageEditor } from "./profile-image-editor";
+import { ProfileLoading } from "@/shared/components/loading/loading-system";
 
 const getErrorMessage = (error: unknown) => {
   if (error && typeof error === "object") {
@@ -309,13 +310,7 @@ export function ProfileForm() {
   };
 
   if (profileQuery.isLoading) {
-    return (
-      <Card className="border border-border shadow-sm">
-        <CardContent className="flex items-center justify-center p-10">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <ProfileLoading />;
   }
 
   return (

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -44,6 +44,7 @@ import {
   type NotificationStatus,
   type NotificationType,
 } from "../api/notifications-api";
+import { TableLoading } from "@/shared/components/loading/loading-system";
 
 const PAGE_SIZE = 10;
 
@@ -203,9 +204,7 @@ export function NotificationList() {
       </section>
 
       {notificationsQuery.isLoading ? (
-        <div className="flex items-center justify-center rounded-3xl border border-border/60 bg-muted/40 p-10">
-          <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
-        </div>
+        <TableLoading rows={3} columns={1} />
       ) : notificationsQuery.isError ? (
         <div className="space-y-4 rounded-3xl border border-destructive/25 bg-destructive/10 p-6">
           <div className="flex items-center gap-3 text-destructive">

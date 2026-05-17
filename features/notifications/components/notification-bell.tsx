@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ import {
   notificationsApi,
   type NotificationItem,
 } from "../api/notifications-api";
+import { TableLoading } from "@/shared/components/loading/loading-system";
 
 export function NotificationBell() {
   const router = useRouter();
@@ -113,8 +114,8 @@ export function NotificationBell() {
         <DropdownMenuSeparator className="bg-border" />
 
         {notificationsQuery.isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <div className="p-4">
+            <TableLoading rows={2} columns={1} />
           </div>
         ) : items.length === 0 ? (
           <div className="px-3 py-8 text-center">

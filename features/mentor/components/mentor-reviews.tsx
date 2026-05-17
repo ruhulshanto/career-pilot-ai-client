@@ -5,6 +5,7 @@ import { ClipboardList, Loader2, Route, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { mentorApi } from "@/services/api/mentor";
 import { formatRelativeTime } from "@/features/dashboard/utils/dashboard-format";
+import { TableLoading } from "@/shared/components/loading/loading-system";
 
 export function MentorReviews() {
   const { data: reviews, isLoading } = useQuery({
@@ -13,11 +14,7 @@ export function MentorReviews() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center rounded-3xl border border-border/60 bg-muted/40">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <TableLoading rows={4} columns={3} />;
   }
 
   return (

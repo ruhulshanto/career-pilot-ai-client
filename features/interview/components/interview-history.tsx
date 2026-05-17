@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ import {
 } from "@/services/api/interview";
 import { useToast } from "@/shared/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
+import { TableLoading } from "@/shared/components/loading/loading-system";
 
 type InterviewHistoryProps = {
   activeSessionId: string | null;
@@ -160,6 +161,10 @@ export function InterviewHistory({
     return () => window.clearInterval(intervalId);
   }, [hasFutureScheduledSessions]);
 
+  if (historyQuery.isLoading) {
+    return <TableLoading rows={3} columns={2} />;
+  }
+
   return (
     <Card className="border border-border shadow-sm">
       <CardHeader className="flex-row items-center gap-3 border-b border-border/70 px-6 py-5">
@@ -169,20 +174,13 @@ export function InterviewHistory({
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-5 p-6 xl:grid-cols-[1fr_0.95fr]">
-        {historyQuery.isLoading ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground xl:col-span-2">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            Loading interview sessions...
-          </div>
-        ) : null}
-
-        {!historyQuery.isLoading && sessions.length === 0 ? (
+        {sessions.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-5 text-sm leading-6 text-muted-foreground xl:col-span-2">
             Your generated interviews will appear here after you start practice.
           </div>
         ) : null}
 
-        {!historyQuery.isLoading && sessions.length ? (
+        {sessions.length ? (
           <>
             <div className="space-y-4">
               <div>

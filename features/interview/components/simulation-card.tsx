@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,6 +39,7 @@ import {
   type InterviewSession,
   type InterviewSlot,
 } from "@/services/api/interview";
+import { CardGridLoading, TableLoading } from "@/shared/components/loading/loading-system";
 
 type InterviewSimulationCardProps = {
   activeSessionId: string | null;
@@ -646,10 +647,7 @@ export function InterviewSimulationCard({
           {scheduleMode === "slot" ? (
             <div className="space-y-3">
               {slotsQuery.isLoading ? (
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  Loading available slots...
-                </div>
+                <CardGridLoading count={5} />
               ) : slotsQuery.isError ? (
                 <div className="flex flex-col gap-3 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                   <span>
@@ -719,10 +717,7 @@ export function InterviewSimulationCard({
         ) : null}
 
         {isGeneratingQuestions ? (
-          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            Generating role-specific interview questions...
-          </div>
+          <TableLoading rows={3} columns={1} />
         ) : null}
 
         {questions.length > 0 ? (
@@ -739,11 +734,10 @@ export function InterviewSimulationCard({
                 </p>
               </div>
               {isWaitingForFeedback ? (
-                <div className="flex items-center gap-2 text-sm text-primary">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="flex items-center gap-2 text-sm text-primary font-semibold">
                   {submitMutation.isPending
-                    ? "Submitting answers"
-                    : "Generating feedback"}
+                    ? "Submitting answers..."
+                    : "Generating feedback..."}
                 </div>
               ) : null}
             </div>
@@ -767,19 +761,7 @@ export function InterviewSimulationCard({
             ) : null}
 
             {isWaitingForFeedback ? (
-              <div className="overflow-hidden rounded-2xl border border-primary/20 bg-primary/10">
-                <div className="flex items-center gap-3 px-5 py-4 text-sm text-foreground">
-                  <ClipboardCheck className="h-5 w-5 text-primary" />
-                  <span>
-                    {submitMutation.isPending
-                      ? "Submitting your answers..."
-                      : "CareerAI is reading your answers and preparing per-question mentoring notes."}
-                  </span>
-                </div>
-                <div className="h-1.5 w-full bg-muted/40">
-                  <div className="h-full w-2/3 animate-pulse rounded-r-full bg-primary" />
-                </div>
-              </div>
+              <TableLoading rows={3} columns={1} />
             ) : null}
 
             {isScheduledForFuture ? (

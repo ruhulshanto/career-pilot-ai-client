@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button";
 import { mentorApi } from "@/services/api/mentor";
 import { formatRelativeTime } from "@/features/dashboard/utils/dashboard-format";
+import { TableLoading } from "@/shared/components/loading/loading-system";
 
 export function MentorStudents() {
   const { data, isLoading } = useQuery({
@@ -14,11 +15,7 @@ export function MentorStudents() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center rounded-3xl border border-border/60 bg-muted/40">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <TableLoading rows={4} columns={3} />;
   }
 
   const assignedUsers = data?.assignedUsers || [];

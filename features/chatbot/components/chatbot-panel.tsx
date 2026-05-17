@@ -35,6 +35,7 @@ import { useWorkspaceBase } from "@/shared/hooks/use-workspace-base";
 import { getWorkspaceHref } from "@/shared/lib/role-routing";
 import type { ChatbotSessionResponse } from "@/shared/types/chatbot";
 import { chatbotApi } from "@/services/api/chatbot";
+import { TableLoading } from "@/shared/components/loading/loading-system";
 
 export const ChatbotPanel = () => {
   const {
@@ -317,20 +318,12 @@ export const ChatbotPanel = () => {
 
           <ScrollArea className="min-w-0 flex-1 overflow-hidden">
             <div className="w-full min-w-0 max-w-full space-y-3 overflow-x-hidden px-1">
-              {isLoading && sessions.length === 0
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-4 rounded-3xl bg-card p-4 animate-pulse"
-                    >
-                      <div className="h-10 w-10 rounded-2xl bg-muted/40 shrink-0" />
-                      <div className="flex-1 space-y-2 pt-1">
-                        <div className="h-4 w-3/4 rounded bg-muted/60" />
-                        <div className="h-3 w-1/2 rounded bg-muted/40" />
-                      </div>
-                    </div>
-                  ))
-                : sortedSessions.map((session) => (
+              {isLoading && sessions.length === 0 ? (
+                <div className="p-3">
+                  <TableLoading rows={5} columns={1} />
+                </div>
+              ) : (
+                sortedSessions.map((session) => (
                     <SessionItem
                       key={session.id}
                       session={session}
@@ -368,7 +361,8 @@ export const ChatbotPanel = () => {
                       }}
                       onDelete={() => setSessionToDelete(session)}
                     />
-                  ))}
+                  ))
+              )}
             </div>
           </ScrollArea>
 

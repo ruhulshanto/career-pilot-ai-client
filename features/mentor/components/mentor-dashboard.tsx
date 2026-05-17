@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,6 +18,7 @@ import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/hooks/use-toast";
 import { formatRelativeTime } from "@/features/dashboard/utils/dashboard-format";
 import { mentorApi, type MentorReview } from "@/services/api/mentor";
+import { PageLoading } from "@/shared/components/loading/loading-system";
 
 const dashboardKey = ["mentor", "dashboard"] as const;
 
@@ -84,11 +85,7 @@ export function MentorDashboard() {
   });
 
   if (dashboardQuery.isLoading) {
-    return (
-      <div className="flex items-center justify-center rounded-3xl border border-border/60 bg-muted/40 p-10">
-        <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <PageLoading title={true} grid={true} table={true} />;
   }
 
   const data = dashboardQuery.data;

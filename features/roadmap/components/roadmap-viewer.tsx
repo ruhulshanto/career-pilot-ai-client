@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -40,6 +40,7 @@ import { resumeApi, type ResumeWithFeedback } from "@/services/api/resume";
 import { refreshDashboardQueries } from "@/features/dashboard/utils/dashboard-query-sync";
 import { resumeQueryKeys } from "@/features/resume/api/resume-query-keys";
 import { roadmapQueryKeys } from "../api/roadmap-query-keys";
+import { CardGridLoading, PageLoading } from "@/shared/components/loading/loading-system";
 
 const activeStatuses = ["PENDING", "PROCESSING"] as const;
 const terminalStatuses = ["COMPLETED", "FAILED"] as const;
@@ -631,7 +632,7 @@ function RoadmapTimeline({
         <CardContent className="space-y-6 p-6">
           {orderedMilestones.map((milestone, index) => (
             <MilestoneCard
-              key={milestone.id}
+              key={milestone.id || `milestone-${index}`}
               milestone={milestone}
               isLast={index === orderedMilestones.length - 1}
               isUpdating={isUpdating}
@@ -721,10 +722,7 @@ function RoadmapJobRecommendations({ roadmap }: { roadmap: CareerRoadmap }) {
       </CardHeader>
       <CardContent className="p-6">
         {jobsQuery.isLoading ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/40 px-4 py-5 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading role-matched jobs...
-          </div>
+          <CardGridLoading count={3} />
         ) : jobs.length === 0 ? (
           <div className="rounded-2xl border border-border/60 bg-muted/40 px-4 py-5 text-sm text-muted-foreground">
             No job matches yet. Refresh jobs after your roadmap finishes generating.
@@ -896,9 +894,9 @@ function InsightList({ title, items }: { title: string; items: string[] }) {
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 p-6">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
-            key={item}
+            key={`${item}-${index}`}
             className="rounded-2xl border border-border/60 bg-muted/40 px-4 py-3 text-sm text-muted-foreground"
           >
             {item}
@@ -914,8 +912,8 @@ function MiniList({ title, items }: { title: string; items: string[] }) {
     <div className="rounded-2xl border border-border/60 bg-muted/35 p-4">
       <p className="mb-3 text-sm font-semibold text-foreground">{title}</p>
       <ul className="space-y-2 text-sm text-muted-foreground">
-        {items.map((item) => (
-          <li key={item}>{item}</li>
+        {items.map((item, index) => (
+          <li key={`${item}-${index}`}>{item}</li>
         ))}
       </ul>
     </div>
@@ -942,10 +940,9 @@ function RoadmapProcessing({
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-accent/20 bg-accent/10 p-10 text-center">
-      <Loader2 className="h-10 w-10 animate-spin text-accent" />
       <div>
         <p className="text-lg font-semibold text-foreground">
-          CareerAI is generating your roadmap
+          CareerAI is generating your roadmap...
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
           Status: {roadmap.status}. This page checks for updates about every 15
@@ -992,11 +989,7 @@ function RoadmapProcessing({
 }
 
 function RoadmapLoading() {
-  return (
-    <div className="flex items-center justify-center rounded-3xl border border-border bg-card p-10">
-      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
-  );
+  return <PageLoading title={true} grid={true} table={false} />;
 }
 
 function RoadmapEmpty() {
