@@ -34,6 +34,7 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { useWorkspaceBase } from "@/shared/hooks/use-workspace-base";
 import { getWorkspaceHref } from "@/shared/lib/role-routing";
 import type { ChatbotSessionResponse } from "@/shared/types/chatbot";
+import { chatbotApi } from "@/services/api/chatbot";
 
 export const ChatbotPanel = () => {
   const {
@@ -148,7 +149,6 @@ export const ChatbotPanel = () => {
   const handleNewSession = async (initialMessage?: string) => {
     setIsCreating(true);
     try {
-      const { chatbotApi } = await import("@/services/api/chatbot");
       const newSession = await chatbotApi.createSession({
         title: initialMessage
           ? initialMessage.slice(0, 48)
