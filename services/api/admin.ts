@@ -123,6 +123,25 @@ export type AdminDashboard = {
   generatedAt: string;
 };
 
+export type AdminUsersResponse = {
+  total: number;
+  page: number;
+  limit: number;
+  users: Array<{
+    id: string;
+    email: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string | null;
+    role: string;
+    emailVerifiedAt?: string | null;
+    lastLoginAt?: string | null;
+    createdAt: string;
+    deletedAt?: string | null;
+  }>;
+};
+
 export const adminApi = {
   async dashboard() {
     const response = await apiClient.get<{ data: AdminDashboard }>(
@@ -138,6 +157,19 @@ export const adminApi = {
     const response = await apiClient.post<{ data: { retried: number; errors: string[] } }>(
       `/admin/system/queues/${queueName}/retry-failed`,
       { limit }
+    );
+    return response.data.data;
+  },
+  async getUsers(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    role?: string;
+    status?: string;
+  }) {
+    const response = await apiClient.get<{ data: AdminUsersResponse }>(
+      "/admin/users",
+      { params }
     );
     return response.data.data;
   },
