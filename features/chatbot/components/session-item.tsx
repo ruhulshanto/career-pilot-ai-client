@@ -200,19 +200,25 @@ export const SessionItem = React.memo(function SessionItem({
             "flex h-9 flex-none items-center gap-0.5 transition-all duration-300",
             isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
           )}>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={onTogglePin}
-              className={cn(
-                "h-8 w-8 rounded-lg p-0 hover:bg-muted/40 transition-colors",
-                isPinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              )}
-              title={isPinned ? "Unpin" : "Pin"}
-            >
-              <Pin className="h-4 w-4" />
-            </Button>
+            <div className="relative group/pin flex items-center justify-center">
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={onTogglePin}
+                className={cn(
+                  "h-8 w-8 rounded-lg p-0 hover:bg-muted/40 transition-colors",
+                  isPinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label={isPinned ? "Unpin conversation" : "Pin conversation"}
+              >
+                <Pin className="h-4 w-4" />
+              </Button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max scale-0 transition-all duration-200 origin-bottom group-hover/pin:scale-100 bg-neutral-950 text-neutral-50 dark:bg-neutral-50 dark:text-neutral-950 text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-xl pointer-events-none z-50 flex flex-col items-center">
+                <span>Only 3 chats can be pinned</span>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-950 dark:border-t-neutral-50" />
+              </div>
+            </div>
             <Button
               type="button"
               size="icon"

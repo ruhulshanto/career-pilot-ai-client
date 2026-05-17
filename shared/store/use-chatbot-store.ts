@@ -141,7 +141,13 @@ export const useChatbotStore = create<ChatbotState>((set, get) => ({
 
   togglePinSession: (sessionId) => {
     const { pinnedSessionIds } = get();
-    const nextPinnedSessionIds = pinnedSessionIds.includes(sessionId)
+    const isAlreadyPinned = pinnedSessionIds.includes(sessionId);
+
+    if (!isAlreadyPinned && pinnedSessionIds.length >= 3) {
+      throw new Error("MAX_PINS_REACHED");
+    }
+
+    const nextPinnedSessionIds = isAlreadyPinned
       ? pinnedSessionIds.filter((id) => id !== sessionId)
       : [sessionId, ...pinnedSessionIds];
 

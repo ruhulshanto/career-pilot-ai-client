@@ -349,7 +349,19 @@ export const ChatbotPanel = () => {
                       onRename={(title) =>
                         handleRenameSession(session.id, title)
                       }
-                      onTogglePin={() => togglePinSession(session.id)}
+                      onTogglePin={() => {
+                        try {
+                          togglePinSession(session.id);
+                        } catch (err: any) {
+                          if (err.message === "MAX_PINS_REACHED") {
+                            toast({
+                              variant: "destructive",
+                              title: "Pin limit reached",
+                              description: "Only 3 chats can be pinned.",
+                            });
+                          }
+                        }
+                      }}
                       onShare={() => {
                         setShareCopied(false);
                         setSessionToShare(session);
