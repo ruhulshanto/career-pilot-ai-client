@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Check,
   MessageSquare,
+  MoreHorizontal,
   Pencil,
   Pin,
   Share2,
@@ -13,6 +14,13 @@ import {
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
 import type { ChatbotSessionResponse } from "@/shared/types/chatbot";
 
 interface SessionItemProps {
@@ -198,58 +206,64 @@ export const SessionItem = React.memo(function SessionItem({
       ) : (
         !isSelectMode && (
           <div className={cn(
-            "flex h-9 flex-none items-center gap-0.5 transition-all duration-300",
+            "flex h-9 flex-none items-center justify-center transition-all duration-300",
             isActive ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
           )}>
-            <div className="relative group/pin flex items-center justify-center">
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                onClick={onTogglePin}
-                className={cn(
-                  "h-8 w-8 rounded-lg p-0 hover:bg-muted/40 transition-colors",
-                  isPinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                )}
-                aria-label={isPinned ? "Unpin conversation" : "Pin conversation"}
-              >
-                <Pin className="h-4 w-4" />
-              </Button>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max scale-0 transition-all duration-200 origin-bottom group-hover/pin:scale-100 bg-neutral-950 text-neutral-50 dark:bg-neutral-50 dark:text-neutral-950 text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-xl pointer-events-none z-50 flex flex-col items-center">
-                <span>Only 3 chats can be pinned</span>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-950 dark:border-t-neutral-50" />
-              </div>
-            </div>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={onShare}
-              className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-              title="Share"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={startRename}
-              className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-              title="Rename"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={onDelete}
-              className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/15 transition-colors"
-              title="Delete"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/40 bg-background/95 backdrop-blur-xl shadow-xl">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTogglePin();
+                  }}
+                  className="gap-2 cursor-pointer"
+                  title="Only 3 chats can be pinned"
+                >
+                  <Pin className={cn("h-4 w-4", isPinned ? "text-primary" : "text-muted-foreground")} />
+                  <span>{isPinned ? "Unpin" : "Pin"}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShare();
+                  }}
+                  className="gap-2 cursor-pointer"
+                >
+                  <Share2 className="h-4 w-4 text-muted-foreground" />
+                  <span>Share</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startRename();
+                  }}
+                  className="gap-2 cursor-pointer"
+                >
+                  <Pencil className="h-4 w-4 text-muted-foreground" />
+                  <span>Rename</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  className="gap-2 cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )
       )}
