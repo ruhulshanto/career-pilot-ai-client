@@ -24,7 +24,11 @@ const AUTH_ENDPOINTS = [
 ];
 
 const normalizeUser = (user: any) => ({
-  id: user?.id,
+  id: user?.id || '',
+  firstName: user?.firstName || '',
+  lastName: user?.lastName || '',
+  username: user?.username || '',
+  avatarUrl: user?.avatarUrl || null,
   name:
     user?.name ||
     [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||

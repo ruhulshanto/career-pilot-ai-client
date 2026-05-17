@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
@@ -10,9 +10,9 @@ import {
   Loader2,
   MessageSquareText,
   Send,
-  Sparkles,
   UserRound,
 } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 import { Button } from "@/shared/components/ui/button";
 import { chatbotApi } from "@/services/api/chatbot";
 import type { PublicChatMessage } from "@/shared/types/chatbot";
@@ -31,7 +31,7 @@ const starterPrompts = [
     label: "Become a frontend engineer",
     prompt:
       "How do I become a frontend engineer if I already know basic JavaScript?",
-    icon: Sparkles,
+    icon: CareerPilotTrajectoryIcon,
   },
   {
     label: "Find missing data skills",
@@ -63,17 +63,68 @@ const getErrorMessage = (error: unknown) => {
   return "The public assistant could not respond right now. Please try again in a moment.";
 };
 
+import { motion, AnimatePresence } from "framer-motion";
+
+const initialMessageText =
+  "Give me a role target, a resume concern, or an interview scenario. I will turn it into a practical next move. Public preview chats are temporary; your dashboard workspace saves deeper plans.";
+
+const TypewriterText = ({ text, delay = 0, duration = 1.5 }: { text: string; delay?: number; duration?: number }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      let i = 0;
+      const interval = setInterval(() => {
+        setDisplayedText(text.slice(0, i));
+        i++;
+        if (i > text.length) clearInterval(interval);
+      }, (duration * 1000) / text.length);
+      return () => clearInterval(interval);
+    }, delay * 1000);
+    return () => clearTimeout(timer);
+  }, [text, delay, duration]);
+
+  return <p className="whitespace-pre-wrap">{displayedText}</p>;
+};
+
 export function HomepageAssistant() {
-  const [messages, setMessages] = useState<PublicChatMessage[]>([
-    initialMessage,
-  ]);
+  const [messages, setMessages] = useState<PublicChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showFullFirstMessage, setShowFullFirstMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ block: "end" });
+    // Force window to top on mount
+    window.scrollTo(0, 0);
+
+    // Initial delay for entrance animation, then start typewriter
+    const timer = setTimeout(() => {
+      setMessages([{
+        id: "initial",
+        role: "assistant",
+        content: initialMessageText,
+        timestamp: new Date().toISOString()
+      }]);
+    }, 600);
+
+    const doneTimer = setTimeout(() => {
+      setShowFullFirstMessage(true);
+    }, 2500);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(doneTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Only scroll if there are messages and it's not the very first mount
+    if (messages.length > 1 || isSending) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [messages, isSending]);
 
   const sendMessage = async (content: string) => {
@@ -87,7 +138,6 @@ export function HomepageAssistant() {
       timestamp: new Date().toISOString(),
     };
     const contextMessages = messages
-      .filter((message) => message.id !== initialMessage.id)
       .slice(-6)
       .map(({ role, content: messageContent }) => ({
         role,
@@ -118,147 +168,126 @@ export function HomepageAssistant() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card/85 p-3 shadow-xl shadow-elevation/10">
-      <div className="overflow-hidden rounded-xl border border-border/80 bg-card">
-        <div className="border-b border-border/80 px-5 py-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Bot className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Career Pilot AI</p>
-                <p className="text-xs text-muted-foreground">
-                  Public career copilot
-                </p>
-              </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 30, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.8, cubicBezier: [0.16, 1, 0.3, 1] }}
+      className="relative flex flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-2xl"
+    >
+      {/* ── Header ── */}
+      <div className="border-b border-border/50 bg-muted/20 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <CareerPilotTrajectoryIcon className="h-5 w-5" />
             </div>
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-              <span className="h-2 w-2 rounded-full bg-accent" />
-              stateless preview
+            <div>
+              <h3 className="text-sm font-bold text-foreground">Career Pilot AI</h3>
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Active Assistant</span>
+              </div>
             </div>
           </div>
-
-          <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
-            {[
-              { label: "Resume strategy", icon: FileSearch },
-              { label: "Role roadmap", icon: Compass },
-              { label: "Interview coaching", icon: BriefcaseBusiness },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex min-w-0 items-center gap-2 rounded-lg border border-border/70 bg-background/35 px-3 py-2"
-              >
-                <item.icon className="h-4 w-4 shrink-0 text-primary" />
-                <span className="truncate">{item.label}</span>
-              </div>
-            ))}
+          <div className="hidden sm:block">
+            <span className="rounded-lg border border-border/60 px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              Preview Mode
+            </span>
           </div>
-        </div>
-
-        <div className="space-y-4 p-4 sm:p-5">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px]">
-            <div className="max-h-[360px] min-h-[300px] space-y-3 overflow-y-auto pr-1">
-              {messages.map((message) => {
-                const isUser = message.role === "user";
-                const Icon = isUser ? UserRound : Bot;
-
-                return (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}
-                  >
-                    {!isUser && (
-                      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Icon className="h-4 w-4" />
-                      </div>
-                    )}
-                    <div
-                      className={`max-w-[88%] rounded-xl px-4 py-3 text-sm leading-6 ${
-                        isUser
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border/80 bg-background/55 text-foreground"
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap break-words">
-                        {message.content}
-                      </p>
-                    </div>
-                    {isUser && (
-                      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                        <Icon className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {isSending && (
-                <div className="flex gap-3">
-                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Bot className="h-4 w-4" />
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/55 px-4 py-3 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    Mapping the highest-leverage next move
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-              {starterPrompts.map((starter) => (
-                <button
-                  key={starter.label}
-                  type="button"
-                  onClick={() => void sendMessage(starter.prompt)}
-                  disabled={isSending}
-                  className="group flex min-w-0 items-center gap-2 rounded-lg border border-border/80 bg-muted/20 px-3 py-3 text-left text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <starter.icon className="h-4 w-4 shrink-0 text-primary transition group-hover:text-accent" />
-                  <span className="min-w-0 leading-5">{starter.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {error && (
-            <div className="flex items-start gap-2 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs leading-5 text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
-            <label className="sr-only" htmlFor="homepage-ai-question">
-              Ask Career Pilot AI
-            </label>
-            <textarea
-              id="homepage-ai-question"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Ask about resumes, roles, interviews, or job search..."
-              className="min-h-12 flex-1 resize-none rounded-xl border border-input bg-background/70 px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              maxLength={1200}
-              rows={1}
-            />
-            <Button
-              type="submit"
-              className="h-12 shrink-0"
-              disabled={isSending || draft.trim().length < 2}
-              aria-label="Send public assistant message"
-            >
-              {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              Send
-            </Button>
-          </form>
         </div>
       </div>
-    </div>
+
+      {/* ── Chat Container ── */}
+      <div className="flex flex-col h-[520px] p-4 sm:p-6 bg-background/50">
+        <div className="flex-1 space-y-5 overflow-y-auto pr-1 custom-scrollbar">
+          <AnimatePresence initial={false}>
+            {messages.map((message, idx) => {
+              const isUser = message.role === "user";
+              const isFirst = message.id === "initial";
+              
+              return (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}
+                >
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                    isUser ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+                  }`}>
+                    {isUser ? <UserRound className="h-4 w-4" /> : <CareerPilotTrajectoryIcon className="h-4 w-4" />}
+                  </div>
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                    isUser 
+                      ? "bg-primary text-primary-foreground rounded-tr-none" 
+                      : "border border-border/50 bg-card text-foreground/90 rounded-tl-none shadow-sm"
+                  }`}>
+                    {isFirst && !showFullFirstMessage ? (
+                      <TypewriterText text={initialMessageText} duration={1.5} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {isSending && (
+            <div className="flex gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <CareerPilotTrajectoryIcon className="h-4 w-4" />
+              </div>
+              <div className="flex items-center gap-2 rounded-2xl border border-border/50 bg-card px-4 py-3 text-sm text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="text-xs">Thinking...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* ── Input Area ── */}
+        <div className="mt-6">
+          <div className="mb-4 flex flex-wrap gap-2">
+            {starterPrompts.map((s) => (
+              <button
+                key={s.label}
+                onClick={() => void sendMessage(s.prompt)}
+                disabled={isSending}
+                className="rounded-full border border-border/60 bg-card px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:text-primary disabled:opacity-50"
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="relative">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void sendMessage(draft);
+                }
+              }}
+              placeholder="Type a message..."
+              className="w-full min-h-[50px] max-h-32 resize-none rounded-2xl border border-border/60 bg-muted/20 py-3 pl-4 pr-12 text-sm outline-none transition-all focus:border-primary/50 focus:bg-background"
+              rows={1}
+            />
+            <button
+              disabled={isSending || !draft.trim()}
+              className="absolute right-2.5 bottom-2 flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-opacity disabled:opacity-30"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+          <p className="mt-3 text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest font-semibold">
+            Press Enter to send
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageSquarePlus, Sparkles } from "lucide-react";
+import { MessageSquarePlus } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 
@@ -31,7 +32,7 @@ export const ChatEmptyState = ({ onStart }: ChatEmptyStateProps) => (
   <Card className="h-full border border-border shadow-sm">
     <CardContent className="flex h-full flex-col items-center justify-center gap-8 p-10 text-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 text-primary">
-        <Sparkles className="h-10 w-10" />
+        <CareerPilotTrajectoryIcon className="h-10 w-10" />
       </div>
 
       <div className="space-y-3 max-w-md">

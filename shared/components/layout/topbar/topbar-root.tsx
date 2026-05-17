@@ -4,6 +4,8 @@ import { Menu, Bot } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { useUiStore } from "@/shared/store/ui-store";
+import { useAuthStore } from "@/shared/store/auth-store";
+import { getPublicImageUrl } from "@/shared/utils/image";
 
 import { CommandTrigger } from "./command-trigger";
 import { DynamicBreadcrumbs } from "./dynamic-breadcrumbs";
@@ -15,11 +17,12 @@ interface TopbarProps {
 
 export function TopbarRoot({ title }: TopbarProps) {
   const { toggleMobileDrawer, toggleAiDrawer } = useUiStore();
+  const { user } = useAuthStore();
 
   return (
     <header className="dark-surface-topbar z-30 shrink-0 border-b border-border/40 bg-card/80 px-4 py-2.5 shadow-sm backdrop-blur-xl dark:border-border/40">
       <div className="flex min-w-0 items-center justify-between gap-4 h-9">
-        
+
         {/* Left: Mobile Trigger & Breadcrumbs */}
         <div className="flex min-w-0 items-center gap-3">
           <Button
@@ -33,7 +36,7 @@ export function TopbarRoot({ title }: TopbarProps) {
           </Button>
 
           <DynamicBreadcrumbs />
-          
+
           {/* Fallback title for mobile if breadcrumbs are hidden */}
           <span className="sm:hidden text-sm font-semibold truncate text-foreground">
             {title || "Dashboard"}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, LogOut, PanelLeftClose } from "lucide-react";
+import { ChevronRight, LogOut, PanelLeftClose } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
@@ -13,18 +13,22 @@ import { useAuthStore } from "@/shared/store/auth-store";
 import { authApi } from "@/services/auth/auth-api";
 import { getWorkspaceBaseFromPath } from "@/shared/lib/role-routing";
 import { getNavigationForRole } from "@/shared/lib/navigation-config";
+import { getPublicImageUrl } from "@/shared/utils/image";
+import { ProfileImagePreview } from "@/shared/components/ui/profile-image-preview";
 
 import { SidebarGroup } from "./sidebar-group";
 import { WorkspaceSwitcher } from "./workspace-switcher";
+import { BrandLogo } from "../brand-logo";
 
 export function SidebarRoot() {
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const { isSidebarCollapsed, toggleSidebar, isMobileDrawerOpen, setMobileDrawerOpen } = useUiStore();
-  const { role, logout } = useAuthStore();
-  
+  const { role, user, logout } = useAuthStore();
+
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => setMounted(true), []);
 
   const workspaceBase = getWorkspaceBaseFromPath(pathname, role);
@@ -45,26 +49,20 @@ export function SidebarRoot() {
   const renderContent = (isMobile: boolean) => (
     <div className="relative flex h-full min-h-0 flex-col bg-card/40 backdrop-blur-md">
       {/* Brand Header */}
-      <div className="flex h-14 shrink-0 items-center border-b border-border/40 px-4">
-        <Link href="/" className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-80">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary shadow-sm shadow-primary/20 transition-transform hover:scale-105">
-            <span className="text-sm font-bold text-primary-foreground">CP</span>
-          </div>
-          {(!isSidebarCollapsed || isMobile) && (
-            <span className="truncate text-base font-bold tracking-tight text-foreground">
-              Career Pilot
-            </span>
-          )}
-        </Link>
+      <div className={cn(
+        "flex h-16 shrink-0 items-center border-b border-border/40",
+        (isSidebarCollapsed && !isMobile) ? "justify-center px-2" : "px-4",
+      )}>
+        <BrandLogo variant="sidebar" collapsed={isSidebarCollapsed && !isMobile} />
       </div>
 
       {/* Navigation Areas */}
       <nav className="custom-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-3 py-4">
         {mounted && navGroups.map((group) => (
-          <SidebarGroup 
-            key={group.id} 
-            group={group} 
-            isCollapsed={isSidebarCollapsed && !isMobile} 
+          <SidebarGroup
+            key={group.id}
+            group={group}
+            isCollapsed={isSidebarCollapsed && !isMobile}
             workspaceBase={workspaceBase}
             onItemClick={() => setMobileDrawerOpen(false)}
           />
@@ -72,9 +70,47 @@ export function SidebarRoot() {
       </nav>
 
       {/* Bottom Footer Area */}
-      <div className="shrink-0 border-t border-border/40 p-3 bg-background/20">
+      <div className="shrink-0 border-t border-border/40 p-3 bg-background/20 space-y-3">
+        {/* User Mini Profile */}
+        <Link
+          href={workspaceBase + "/settings"}
+          onClick={() => setMobileDrawerOpen(false)}
+          className={cn(
+            "group flex items-center gap-3 rounded-2xl p-2 transition-all hover:bg-accent/5 active:scale-95",
+            (isSidebarCollapsed && !isMobile) ? "justify-center" : ""
+          )}
+        >
+          <ProfileImagePreview avatarUrl={user?.avatarUrl} name={user?.name}>
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border/60 bg-muted shadow-sm ring-2 ring-border/20 transition-all group-hover:ring-accent/30">
+              {user?.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={getPublicImageUrl(user.avatarUrl) ?? ""}
+                  alt={user.firstName || "User"}
+                  className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-accent/10 text-accent text-xs font-bold">
+                  {(user?.firstName?.[0] || user?.email?.[0] || "U").toUpperCase()}
+                </div>
+              )}
+            </div>
+          </ProfileImagePreview>
+          
+          {(!isSidebarCollapsed || isMobile) && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-foreground transition-colors group-hover:text-accent">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="truncate text-[11px] font-medium text-muted-foreground">
+                @{user?.username || "user"}
+              </p>
+            </div>
+          )}
+        </Link>
+
         <WorkspaceSwitcher isCollapsed={isSidebarCollapsed && !isMobile} />
-        
+
         <Button
           variant="ghost"
           onClick={handleLogout}

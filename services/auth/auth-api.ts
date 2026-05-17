@@ -7,6 +7,8 @@ export type AuthUser = {
   lastName?: string;
   name?: string;
   email: string;
+  username?: string;
+  avatarUrl?: string | null;
   emailVerifiedAt?: string | null;
   isDemo?: boolean;
   role: 'USER' | 'ADMIN' | 'COACH' | 'MENTOR';

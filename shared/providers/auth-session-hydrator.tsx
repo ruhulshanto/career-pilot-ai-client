@@ -6,11 +6,14 @@ import { authApi, type AuthUser } from "@/services/auth/auth-api";
 import { useAuthStore } from "@/shared/store/auth-store";
 
 const normalizeUser = (user: AuthUser) => ({
-  id: user.id,
+  id: user.id || "",
+  firstName: user.firstName || "",
+  lastName: user.lastName || "",
+  username: user.username || "",
+  avatarUrl: user.avatarUrl,
   name:
     user.name ||
     [user.firstName, user.lastName].filter(Boolean).join(" ") ||
-    user.firstName ||
     "User",
   email: user.email,
 });

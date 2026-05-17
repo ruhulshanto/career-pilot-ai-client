@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Bot, Sparkles, Send } from "lucide-react";
+import { X, Bot, Send } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 
 import { useUiStore } from "@/shared/store/ui-store";
 import { useAiContextStore } from "@/shared/store/ai-context-store";
@@ -58,7 +59,7 @@ export default function AiDrawer() {
             <div className="flex shrink-0 items-center justify-between border-b border-border/40 px-5 py-4 bg-card/50">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary shadow-sm shadow-primary/10">
-                  <Bot className="h-4 w-4" />
+                  <CareerPilotTrajectoryIcon className="h-4 w-4" />
                 </div>
                 <div>
                   <h2 className="text-sm font-semibold text-foreground leading-tight">Career Copilot</h2>
@@ -80,7 +81,7 @@ export default function AiDrawer() {
               {/* Context Indicator (Minimalist injection proof) */}
               <div className="mb-auto self-start rounded-xl border border-border/40 bg-muted/30 px-3 py-2 shadow-sm">
                 <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                  <Sparkles className="h-3.5 w-3.5 text-primary/80" />
+                  <CareerPilotTrajectoryIcon className="h-3.5 w-3.5 text-primary/80" />
                   <span>
                     Context: <strong className="text-foreground/80">{context.pageMetadata.title || "Dashboard"}</strong>
                   </span>
@@ -91,7 +92,7 @@ export default function AiDrawer() {
               <div className="space-y-4 mb-2 mt-8">
                 <div className="flex gap-3">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-                    <Bot className="h-3.5 w-3.5" />
+                    <CareerPilotTrajectoryIcon className="h-3.5 w-3.5" />
                   </div>
                   <div className="rounded-2xl rounded-tl-sm bg-muted/40 px-4 py-3 text-sm text-foreground shadow-sm border border-border/30 max-w-[85%] leading-relaxed">
                     <p>Hi! I'm your Career Copilot. I can see you are looking at the <strong>{context.pageMetadata.title || "Dashboard"}</strong>.</p>

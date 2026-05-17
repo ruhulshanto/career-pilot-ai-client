@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowUpRight, CreditCard, FileText, Sparkles } from "lucide-react";
+import { ArrowUpRight, CreditCard, FileText } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -44,7 +45,7 @@ export function BillingSettings() {
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <CareerPilotTrajectoryIcon className="h-5 w-5 text-primary" />
               AI usage
             </CardTitle>
             <CardDescription>Usage metering will activate when premium plans are enabled.</CardDescription>

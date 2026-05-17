@@ -1,9 +1,20 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, Eye, EyeOff, Loader2, Plus, Save, Trash2, User } from "lucide-react";
+import { useAuthStore } from "@/shared/store/auth-store";
+import {
+  Camera,
+  Eye,
+  EyeOff,
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+  User,
+} from "lucide-react";
+import { ProfileImagePreview } from "@/shared/components/ui/profile-image-preview";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -25,6 +36,8 @@ import {
   type PreferredWorkModeSelectValue,
   type ProfileDraft,
 } from "../lib/profile-payload";
+import { getPublicImageUrl } from "@/shared/utils/image";
+import { ProfileImageEditor } from "./profile-image-editor";
 
 const getErrorMessage = (error: unknown) => {
   if (error && typeof error === "object") {
@@ -145,8 +158,11 @@ const getSaveToastFeedback = (
 
 export function ProfileForm() {
   const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
   const { dismiss, toast } = useToast();
   const [draft, setDraft] = useState<ProfileDraft>(emptyProfileDraft);
+  const [imageError, setImageError] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [skillInput, setSkillInput] = useState("");
   const [languageInput, setLanguageInput] = useState("");
 
@@ -158,6 +174,7 @@ export function ProfileForm() {
 
   useEffect(() => {
     if (!profileQuery.data) return;
+    setImageError(false); // Reset error when new data loads
     setDraft({
       ...profileQuery.data,
       preferredWorkMode: normalizePreferredWorkMode(
@@ -178,6 +195,7 @@ export function ProfileForm() {
     mutationFn: profileApi.updateMe,
     onSuccess: (profile, submittedDraft) => {
       void queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setUser(profile);
       setDraft({
         ...profile,
         preferredWorkMode: normalizePreferredWorkMode(profile.preferredWorkMode),
@@ -214,6 +232,8 @@ export function ProfileForm() {
   const uploadMutation = useMutation({
     mutationFn: profileApi.uploadPhoto,
     onSuccess: (profile) => {
+      setImageError(false);
+      setUser(profile);
       setDraft((current) => ({ ...current, avatarUrl: profile.avatarUrl }));
       void queryClient.invalidateQueries({ queryKey: ["profile"] });
       dismiss();
@@ -309,14 +329,21 @@ export function ProfileForm() {
       <CardContent className="space-y-8 p-6">
         <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl border border-border bg-muted/40">
-              {draft.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={draft.avatarUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <User className="h-10 w-10 text-muted-foreground" />
-              )}
-            </div>
+            <ProfileImagePreview avatarUrl={draft.avatarUrl} name={fullName}>
+              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-border bg-muted/40 ring-2 ring-border/50 ring-offset-2 ring-offset-background cursor-pointer hover:opacity-90 transition-opacity">
+                {draft.avatarUrl && !imageError ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={getPublicImageUrl(draft.avatarUrl) ?? ""}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <User className="h-10 w-10 text-muted-foreground" />
+                )}
+              </div>
+            </ProfileImagePreview>
             <div>
               <p className="text-lg font-semibold text-foreground">
                 {fullName || "Your name"}
@@ -326,21 +353,64 @@ export function ProfileForm() {
               </p>
             </div>
           </div>
-          <label className="inline-flex h-11 cursor-pointer items-center justify-center rounded-2xl border border-border px-4 text-sm font-medium hover:bg-muted/40 has-[:disabled]:pointer-events-none has-[:disabled]:opacity-60">
-            <Camera className="mr-2 h-4 w-4" />
-            {uploadMutation.isPending ? "Uploading" : "Upload photo"}
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="hidden"
-              disabled={uploadMutation.isPending}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) uploadMutation.mutate(file);
-              }}
-            />
-          </label>
+          <div className="flex flex-col gap-2">
+            <label className="inline-flex h-11 cursor-pointer items-center justify-center rounded-2xl border border-border bg-card px-5 text-sm font-semibold shadow-sm transition-all hover:bg-muted/80 active:scale-95 disabled:pointer-events-none disabled:opacity-50">
+              {uploadMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin text-accent" />
+              ) : (
+                <Camera className="mr-2 h-4 w-4 text-accent" />
+              )}
+              {uploadMutation.isPending ? "Uploading..." : "Change photo"}
+              <input
+                type="file"
+                className="sr-only"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={uploadMutation.isPending}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  // 1MB Client-side validation
+                  if (file.size > 1 * 1024 * 1024) {
+                    toast({
+                      variant: "destructive",
+                      title: "File too large",
+                      description: "Profile photo must be less than 1MB.",
+                    });
+                    return;
+                  }
+
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setSelectedImage(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+
+                  // Reset input so same file can be re-selected if needed
+                  e.target.value = '';
+                }}
+              />
+            </label>
+            <p className="text-[11px] text-muted-foreground">
+              JPG, PNG or WebP. Max 1MB.
+            </p>
+          </div>
         </section>
+
+        {selectedImage && (
+          <ProfileImageEditor
+            image={selectedImage}
+            onCancel={() => setSelectedImage(null)}
+            onConfirm={(croppedBlob) => {
+              // Convert Blob back to File for the mutation
+              const file = new File([croppedBlob], "profile-photo.jpg", {
+                type: "image/jpeg",
+              });
+              uploadMutation.mutate(file);
+              setSelectedImage(null);
+            }}
+          />
+        )}
 
         <Section title="Identity">
           <Field label="First name" value={draft.firstName} onChange={(value) => setField("firstName", value)} />

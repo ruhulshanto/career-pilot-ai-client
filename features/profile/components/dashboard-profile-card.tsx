@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -15,6 +15,7 @@ import { useWorkspaceBase } from "@/shared/hooks/use-workspace-base";
 import { getWorkspaceHref } from "@/shared/lib/role-routing";
 import { profileApi } from "@/services/api/profile";
 import { ShareProfileModal } from "./share-profile-modal";
+import { getPublicImageUrl } from "@/shared/utils/image";
 
 export function DashboardProfileCard() {
   const [shareOpen, setShareOpen] = useState(false);
@@ -42,7 +43,7 @@ export function DashboardProfileCard() {
               {portfolio.user.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={portfolio.user.avatarUrl}
+                  src={getPublicImageUrl(portfolio.user.avatarUrl) ?? ""}
                   alt=""
                   className="h-full w-full object-cover"
                 />

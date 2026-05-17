@@ -26,6 +26,7 @@ import {
 } from "@/shared/components/ui/card";
 import { profileApi, type CareerPortfolio } from "@/services/api/profile";
 import { formatPreferredWorkMode } from "@/features/settings/lib/profile-payload";
+import { getPublicImageUrl } from "@/shared/utils/image";
 
 export default function PublicCareerProfilePage() {
   const params = useParams<{ username: string }>();
@@ -78,7 +79,7 @@ function PortfolioView({ portfolio }: { portfolio: CareerPortfolio }) {
               {portfolio.user.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={portfolio.user.avatarUrl}
+                  src={getPublicImageUrl(portfolio.user.avatarUrl) ?? ""}
                   alt=""
                   className="h-full w-full object-cover"
                 />

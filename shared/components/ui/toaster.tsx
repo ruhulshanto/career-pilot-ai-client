@@ -15,12 +15,12 @@ export function Toaster() {
   const { toasts } = useToast()
 
   return (
-    <ToastProvider>
+    <ToastProvider duration={2000}>
       {toasts.map(function ({ id, title, description, action, variant, ...props }) {
         const isDestructive = variant === "destructive"
 
         return (
-          <Toast key={id} variant={variant} {...props}>
+          <Toast key={id} variant={variant} duration={2000} {...props}>
             <div
               className={
                 isDestructive

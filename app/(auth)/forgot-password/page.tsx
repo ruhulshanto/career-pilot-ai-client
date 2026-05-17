@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -12,6 +12,7 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordSchema,
 } from "@/features/auth/schemas/auth-schema";
+import { BrandLogo } from "@/shared/components/layout/brand-logo";
 
 export default function ForgotPasswordPage() {
   const { toast } = useToast();
@@ -40,8 +41,8 @@ export default function ForgotPasswordPage() {
   return (
     <div className="w-full rounded-xl border border-border/80 bg-card/95 p-5 shadow-xl shadow-elevation/10 backdrop-blur-xl sm:p-6 xl:p-7">
       <div className="mb-6 text-center">
-        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Mail className="h-5 w-5" />
+        <div className="mx-auto mb-6 flex justify-center">
+          <BrandLogo className="hover:scale-105" />
         </div>
         <h1 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">Reset password</h1>
         <p className="text-sm text-muted-foreground">

@@ -19,11 +19,11 @@ import {
   MessageSquareText,
   Route,
   Settings,
-  Sparkles,
   Target,
   UserCircle,
   X,
 } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -43,6 +43,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
+import { BrandLogo } from "@/shared/components/layout/brand-logo";
+import { getPublicImageUrl } from "@/shared/utils/image";
+import { ProfileImagePreview } from "@/shared/components/ui/profile-image-preview";
 
 const navItems = [
   { label: "Pricing", href: "/pricing" },
@@ -202,7 +205,9 @@ export function Navbar() {
   const { accessToken, logout, role, user, hasHydrated } = useAuthStore();
   const isAuthenticated = hasHydrated && Boolean(accessToken);
   const dashboardHref = getRoleDashboardHref(role);
-  const displayName = user?.name || "Career Pilot User";
+  const displayName = user
+    ? user.name || `${user.firstName} ${user.lastName}`
+    : "Career Pilot User";
   const initials = displayName
     .split(" ")
     .map((part) => part[0])
@@ -239,24 +244,7 @@ export function Navbar() {
       )}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          onClick={closeMobileMenu}
-          className="group flex shrink-0 items-center gap-3 transition-transform hover:scale-105"
-          aria-label="Career Pilot AI home"
-        >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all group-hover:shadow-primary/30">
-            CP
-          </div>
-          <div className="leading-tight">
-            <span className="block text-sm font-semibold tracking-tight text-foreground sm:text-base">
-              Career Pilot AI
-            </span>
-            <span className="hidden text-xs text-muted-foreground/80 sm:block">
-              AI career operating system
-            </span>
-          </div>
-        </Link>
+        <BrandLogo variant="navbar" className="transition-transform hover:scale-105" />
 
         <div className="hidden items-center rounded-full border border-border/40 bg-card/40 p-1 lg:flex backdrop-blur-sm">
           <Link
@@ -329,18 +317,36 @@ export function Navbar() {
                     className="h-10 rounded-lg border border-border/50 bg-background/40 px-2 transition-all hover:border-border/80 hover:bg-muted/50"
                     aria-label="Open profile menu"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground shadow-lg shadow-primary/20">
-                      {initials || "U"}
-                    </span>
+                    <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg border border-border/40 bg-primary text-xs font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                      {user?.avatarUrl ? (
+                        <img
+                          src={getPublicImageUrl(user.avatarUrl) ?? ""}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        initials || "U"
+                      )}
+                    </div>
                     <ChevronDown className="h-4 w-4 text-muted-foreground/60 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 rounded-xl border-border/60 bg-popover p-3 shadow-xl shadow-elevation/10">
                   <DropdownMenuLabel className="mb-2 rounded-lg bg-muted/35 p-3">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
-                        {initials || "U"}
-                      </span>
+                      <ProfileImagePreview avatarUrl={user?.avatarUrl} name={displayName}>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/40 bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 cursor-pointer hover:opacity-90 transition-opacity">
+                          {user?.avatarUrl ? (
+                            <img
+                              src={getPublicImageUrl(user.avatarUrl) ?? ""}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            initials || "U"
+                          )}
+                        </div>
+                      </ProfileImagePreview>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold">
                           {displayName}
@@ -407,7 +413,7 @@ export function Navbar() {
               </Button>
               <Button asChild size="sm" className="font-semibold gap-2">
                 <Link href="/register">
-                  <Sparkles className="h-4 w-4" />
+                  <CareerPilotTrajectoryIcon className="h-4 w-4" />
                   Get Started
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -510,9 +516,19 @@ export function Navbar() {
                 <>
                   <div className="rounded-xl border border-border/50 bg-muted/30 p-3">
                     <div className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
-                        {initials || "U"}
-                      </span>
+                      <ProfileImagePreview avatarUrl={user?.avatarUrl} name={displayName}>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/40 bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                          {user?.avatarUrl ? (
+                            <img
+                              src={getPublicImageUrl(user.avatarUrl) ?? ""}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            initials || "U"
+                          )}
+                        </div>
+                      </ProfileImagePreview>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold">
                           {displayName}
@@ -575,7 +591,7 @@ export function Navbar() {
                 <>
                   <Button asChild className="w-full">
                     <Link href="/register" onClick={closeMobileMenu}>
-                      <Sparkles className="h-4 w-4" />
+                      <CareerPilotTrajectoryIcon className="h-4 w-4" />
                       Get Started
                     </Link>
                   </Button>

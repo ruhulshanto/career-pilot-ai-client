@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Compass, Layers3, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Compass, Layers3, ShieldCheck } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -21,7 +22,7 @@ export function PublicInfoPage({
   ctaHref = "/register",
   ctaLabel = "Start free",
 }: PublicInfoPageProps) {
-  const itemIcons = [Compass, Layers3, ShieldCheck, Sparkles] as const;
+  const itemIcons = [Compass, Layers3, ShieldCheck, CareerPilotTrajectoryIcon] as const;
 
   return (
     <section className="min-h-[calc(100vh-4rem)] bg-background px-4 pb-16 pt-28 text-foreground sm:px-6 lg:px-8">

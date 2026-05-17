@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense } from "react";
 import Link from "next/link";
@@ -15,6 +15,7 @@ import {
   resetPasswordSchema,
   type ResetPasswordSchema,
 } from "@/features/auth/schemas/auth-schema";
+import { BrandLogo } from "@/shared/components/layout/brand-logo";
 
 export default function ResetPasswordPage() {
   return (
@@ -55,8 +56,8 @@ function ResetPasswordContent() {
   return (
     <div className="w-full rounded-xl border border-border/80 bg-card/95 p-5 shadow-xl shadow-elevation/10 backdrop-blur-xl sm:p-6 xl:p-7">
       <div className="mb-6 text-center">
-        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Lock className="h-5 w-5" />
+        <div className="mx-auto mb-6 flex justify-center">
+          <BrandLogo className="hover:scale-105" />
         </div>
         <h1 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">Create new password</h1>
         <p className="text-sm text-muted-foreground">

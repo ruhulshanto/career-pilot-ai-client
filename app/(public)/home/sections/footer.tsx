@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Sparkles } from "lucide-react";
+import { Mail } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
+
+import { BrandLogo } from "@/shared/components/layout/brand-logo";
 
 const footerGroups = [
   {
@@ -41,48 +44,46 @@ const footerGroups = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/80 bg-background px-4 py-14 text-foreground sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_1.8fr]">
-          <div>
-            <Link href="/" className="inline-flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20">
-                CP
-              </div>
-              <div>
-                <span className="block text-base font-semibold">
-                  Career Pilot AI
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  AI career operating system
-                </span>
-              </div>
-            </Link>
-            <p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">
-              A modern workspace for resume analysis, career roadmaps,
-              interviews, job tracking, and AI-guided career progress.
+    <footer className="relative border-t border-border/50 bg-background pt-24 pb-12 text-foreground overflow-hidden">
+      {/* Background Aesthetic */}
+      <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-primary/5 blur-[120px]" />
+      
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-16 lg:grid-cols-[1.5fr_2.5fr]">
+          {/* Brand & Mission Column */}
+          <div className="flex flex-col items-start">
+            <BrandLogo />
+            <p className="mt-8 max-w-xs text-base leading-relaxed text-muted-foreground/80">
+              The high-fidelity career operating system. Built for modern professionals 
+              who demand precision in their growth.
             </p>
-            <Link
-              href="/contact"
-              className="mt-6 inline-flex items-center gap-2 rounded-lg border border-border/80 bg-card px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/35 hover:text-foreground"
-            >
-              <Mail className="h-4 w-4" />
-              Contact
-            </Link>
+            
+            <div className="mt-10 flex items-center gap-4">
+              <Link
+                href="/contact"
+                className="group flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/20 px-5 py-3 text-sm font-bold transition-all hover:border-primary/50 hover:bg-background"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground">
+                   <Mail className="h-4 w-4" />
+                </div>
+                Contact Support
+              </Link>
+            </div>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Links Grid */}
+          <div className="grid grid-cols-2 gap-12 sm:grid-cols-4 sm:gap-8">
             {footerGroups.map((group) => (
-              <div key={group.title}>
-                <h3 className="text-sm font-semibold text-foreground">
+              <div key={group.title} className="flex flex-col gap-6">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">
                   {group.title}
                 </h3>
-                <div className="mt-4 grid gap-3">
+                <div className="flex flex-col gap-4">
                   {group.links.map((link) => (
                     <Link
                       key={link.label}
                       href={link.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                      className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                     >
                       {link.label}
                     </Link>
@@ -93,12 +94,34 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-border/80 pt-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-accent" />
-            Built for practical, honest AI career guidance.
+        {/* Bottom Meta Bar */}
+        <div className="mt-24 flex flex-col items-center justify-between gap-8 border-t border-border/50 pt-10 sm:flex-row">
+          <div className="flex items-center gap-4">
+             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/30">
+                <CareerPilotTrajectoryIcon className="h-5 w-5 text-primary/60" />
+             </div>
+             <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">Career Pilot AI</span>
+                <span className="text-[10px] font-medium text-muted-foreground">© 2026 • All Rights Reserved</span>
+             </div>
           </div>
-          <p>Copyright 2026 Career Pilot AI. All rights reserved.</p>
+
+          <div className="flex items-center gap-6">
+            {["Twitter", "LinkedIn", "GitHub"].map((social) => (
+               <Link 
+                key={social} 
+                href={`#${social.toLowerCase()}`}
+                className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+               >
+                 {social}
+               </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4 rounded-full border border-border/60 bg-muted/10 px-4 py-2">
+             <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">System Operational</span>
+          </div>
         </div>
       </div>
     </footer>

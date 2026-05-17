@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, {
   useEffect,
@@ -12,11 +12,11 @@ import {
   User,
   Bot,
   Loader2,
-  Sparkles,
   ShieldAlert,
   Clock3,
   RefreshCw,
 } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -239,7 +239,7 @@ export const ChatInterface = ({ sessionId }: { sessionId: string }) => {
               {msg.role === "user" ? (
                 <User className="h-6 w-6" />
               ) : (
-                <Bot className="h-6 w-6" />
+                <CareerPilotTrajectoryIcon className="h-6 w-6" />
               )}
             </div>
 
@@ -283,7 +283,7 @@ export const ChatInterface = ({ sessionId }: { sessionId: string }) => {
           sessionMessages[sessionMessages.length - 1]?.role === "user" && (
             <div className="mr-auto flex max-w-[94%] items-center gap-3 sm:gap-5 lg:max-w-[82%]">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border border-border bg-muted/40 shadow-sm sm:h-12 sm:w-12">
-                <Bot className="h-6 w-6 text-primary animate-pulse" />
+                <CareerPilotTrajectoryIcon className="h-6 w-6 text-primary animate-pulse" />
               </div>
               <div className="rounded-3xl rounded-tl-none border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm sm:p-6">
                 <TypingIndicator />
@@ -301,7 +301,7 @@ export const ChatInterface = ({ sessionId }: { sessionId: string }) => {
               disabled={isStreaming}
               className="inline-flex max-w-[78vw] shrink-0 items-center gap-2 rounded-2xl border border-border/60 bg-muted/40 px-3 py-2 text-left text-xs font-semibold leading-5 text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground disabled:opacity-50 sm:max-w-none"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <CareerPilotTrajectoryIcon className="h-3.5 w-3.5" />
               {prompt}
             </button>
           ))}

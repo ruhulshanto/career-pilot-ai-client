@@ -13,9 +13,9 @@ import {
   Loader2,
   AtSign,
   ShieldCheck,
-  Sparkles,
   GraduationCap,
 } from "lucide-react";
+import { CareerPilotTrajectoryIcon } from "@/shared/components/icons/CareerPilotTrajectoryIcon";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/hooks/use-toast";
@@ -34,8 +34,8 @@ import { useAuthStore } from "@/shared/store/auth-store";
 import { authApi } from "@/services/auth/auth-api";
 import {
   getRoleDashboardHref,
-  resolveWorkspaceHref,
 } from "@/shared/lib/role-routing";
+import { BrandLogo } from "@/shared/components/layout/brand-logo";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -81,6 +81,8 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
       if (response.success) {
         finishAuth(response);
         toast({
+          variant: "success",
+          duration: 2500,
           title: "Welcome back",
           description: "Successfully signed in to your account",
         });
@@ -88,6 +90,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     } catch (err: any) {
       toast({
         variant: "destructive",
+        duration: 3500,
         title: "Sign in failed",
         description:
           err.response?.data?.message ||
@@ -106,6 +109,8 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
         finishAuth(response);
 
         toast({
+          variant: "success",
+          duration: 2500,
           title: "Account created",
           description:
             "Welcome to CareerAI! We sent you an email verification link.",
@@ -114,6 +119,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     } catch (err: any) {
       toast({
         variant: "destructive",
+        duration: 3500,
         title: "Sign up failed",
         description:
           err.response?.data?.message ||
@@ -128,14 +134,18 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
       accessToken: response.data.accessToken,
       role: response.data.user.role,
       user: {
-        id: response.data.user.id,
+        id: response.data.user.id || "",
+        firstName: response.data.user.firstName || "",
+        lastName: response.data.user.lastName || "",
+        username: response.data.user.username || "",
+        email: response.data.user.email,
+        avatarUrl: response.data.user.avatarUrl,
         name:
           response.data.user.name ||
           [response.data.user.firstName, response.data.user.lastName]
             .filter(Boolean)
             .join(" ") ||
-          "Demo User",
-        email: response.data.user.email,
+          "User",
       },
     });
 
@@ -166,6 +176,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
       finishAuth(response);
       toast({
         variant: "success",
+        duration: 2500,
         title: "Demo account ready",
         description:
           role === "ADMIN"
@@ -177,6 +188,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     } catch (err: any) {
       toast({
         variant: "destructive",
+        duration: 3500,
         title: "Demo login failed",
         description:
           err.response?.data?.message ||
@@ -197,8 +209,8 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
         className="w-full rounded-xl border border-border/80 bg-card/95 p-4 shadow-xl shadow-elevation/10 backdrop-blur-xl sm:p-5 xl:p-6"
       >
         <div className="mb-5 text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <User className="h-4 w-4" />
+          <div className="mx-auto mb-6 flex justify-center">
+            <BrandLogo className="hover:scale-105" />
           </div>
           <h1 className="mb-1.5 text-2xl font-bold text-foreground sm:text-[1.7rem]">
             {mode === "login" ? "Welcome back" : "Create your account"}
@@ -384,7 +396,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
               </div>
               <div className="grid gap-2.5">
                 <DemoButton
-                  icon={Sparkles}
+                  icon={CareerPilotTrajectoryIcon}
                   label="User Workspace"
                   badge="USER"
                   description="Career tools and personal progress"
@@ -442,7 +454,7 @@ function DemoButton({
   disabled,
   onClick,
 }: {
-  icon: typeof Sparkles;
+  icon: React.ComponentType<any>;
   label: string;
   badge: string;
   description: string;

@@ -5,8 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/shared/store/auth-store';
 import {
   getRoleDashboardHref,
-  getWorkspaceBaseFromPath,
-  resolveWorkspaceHref,
+  getWorkspaceBaseFromPath
 } from '@/shared/lib/role-routing';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {

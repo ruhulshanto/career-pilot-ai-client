@@ -21,6 +21,7 @@ type AuthState = {
   }) => void;
   setHydrated: (hasHydrated: boolean) => void;
   clearSession: () => void;
+  setUser: (user: AuthState["user"]) => void;
   logout: () => void;
 };
 
@@ -64,6 +65,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
           : current.sessionVersion,
       };
     }),
+  setUser: (user) =>
+    set((current) => ({
+      user: current.user && user ? { ...current.user, ...user } : (user ?? null),
+    })),
   logout: () =>
     set((current) => {
       const hadSession = hasActiveSessionState(current);

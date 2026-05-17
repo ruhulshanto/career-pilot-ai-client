@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
@@ -7,6 +7,7 @@ import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useToast } from "@/shared/hooks/use-toast";
 import { authApi } from "@/services/auth/auth-api";
+import { BrandLogo } from "@/shared/components/layout/brand-logo";
 
 type VerifyState = "loading" | "success" | "error";
 
@@ -67,6 +68,9 @@ function VerifyEmailContent() {
 
   return (
     <div className="w-full rounded-xl border border-border/80 bg-card/95 p-5 text-center shadow-xl shadow-elevation/10 backdrop-blur-xl sm:p-6 xl:p-7">
+      <div className="mx-auto mb-8 flex justify-center">
+        <BrandLogo className="hover:scale-105" />
+      </div>
       <div className="mb-6 flex justify-center">
         <Icon
           className={`h-12 w-12 ${

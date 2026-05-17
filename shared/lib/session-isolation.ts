@@ -1,9 +1,13 @@
 export type SessionRole = "USER" | "ADMIN" | "COACH" | "MENTOR" | null;
 
 export type SessionUser = {
-  id?: string;
-  name: string;
-  email: string;
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  username: string;
+  avatarUrl?: string | null;
+  name?: string; // For legacy/compatibility
 };
 
 export const getAuthSessionKey = ({
