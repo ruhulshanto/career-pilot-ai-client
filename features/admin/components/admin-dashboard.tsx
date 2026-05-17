@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -66,20 +66,11 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Last updated {new Date(query.data.generatedAt).toLocaleString()}
-        </p>
-        <Button
-          variant="outline"
-          onClick={() => query.refetch()}
-          loading={query.isFetching}
-          className="gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
-      </div>
+      <DashboardSnapshotHeader
+        data={query.data}
+        onRefresh={() => query.refetch()}
+        isRefreshing={query.isFetching}
+      />
 
       <MetricGrid data={query.data} />
       <MonitoringGrid data={query.data} />
@@ -94,27 +85,157 @@ export function AdminDashboard() {
   );
 }
 
-function MetricGrid({ data }: { data: AdminDashboardData }) {
+function DashboardSnapshotHeader({
+  data,
+  onRefresh,
+  isRefreshing,
+}: {
+  data: AdminDashboardData;
+  onRefresh: () => void;
+  isRefreshing: boolean;
+}) {
+  const summaryItems = [
+    {
+      label: "Users",
+      value: formatNumber(data.cards.totalUsers),
+      detail: `${formatNumber(data.cards.activeUsers)} active`,
+      icon: Users,
+    },
+    {
+      label: "AI requests",
+      value: formatNumber(data.aiUsage.totalRequests),
+      detail: `${formatNumber(data.aiUsage.failedRequests)} failed`,
+      icon: Bot,
+    },
+    {
+      label: "Job activity",
+      value: formatNumber(data.cards.jobApplications),
+      detail: `${formatNumber(data.cards.interviewsCompleted)} interviews`,
+      icon: BriefcaseBusiness,
+    },
+    {
+      label: "System health",
+      value: data.monitoring.systemStatus,
+      detail: `${data.monitoring.failedJobs} failed jobs`,
+      icon: ShieldAlert,
+    },
+  ];
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {metricCards.map((card) => {
-        const Icon = card.icon;
-        return (
-          <Card key={card.key} className="rounded-2xl">
-            <CardContent className="flex items-center justify-between gap-4 p-5">
-              <div>
-                <p className="text-sm text-muted-foreground">{card.label}</p>
-                <p className="mt-2 text-3xl font-bold tracking-tight">
-                  {formatNumber(data.cards[card.key])}
-                </p>
+    <Card className="rounded-[2rem] border border-border bg-white/90 shadow-sm dark:bg-slate-950/80">
+      <CardContent className="space-y-6 p-6">
+        <div className="flex flex-col gap-4 rounded-3xl bg-muted/5 p-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.28em] text-primary">Platform snapshot</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">Admin dashboard</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              A clean, professional snapshot of system activity, AI usage, and operational health.
+            </p>
+          </div>
+          <div className="flex flex-col items-start gap-3 sm:items-end">
+            <span className="rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">
+              Updated {new Date(data.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+            <Button
+              variant="outline"
+              onClick={onRefresh}
+              loading={isRefreshing}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh snapshot
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {summaryItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.label} className="rounded-3xl border border-border bg-background/80 p-5 shadow-sm">
+                <div className="flex items-center gap-3 text-primary">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+                  </div>
+                </div>
+                <p className="mt-5 text-3xl font-semibold tracking-tight text-foreground">{item.value}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MetricGrid({ data }: { data: AdminDashboardData }) {
+  const heroCards = metricCards.slice(0, 4);
+  const quickTotals = metricCards.slice(4);
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+      <Card className="rounded-3xl border border-border bg-white/80 shadow-sm dark:bg-slate-900/80">
+        <CardHeader className="space-y-1 px-6 pt-6">
+          <CardTitle className="text-2xl">Platform overview</CardTitle>
+          <CardDescription>
+            High-level admin metrics for key usage, growth, and engagement trends.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
+          {heroCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.key}
+                className="rounded-3xl border border-border bg-background/70 p-5 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{card.label}</p>
+                    <p className="mt-3 text-4xl font-semibold tracking-tight">
+                      {formatNumber(data.cards[card.key])}
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-3xl border border-border bg-background/95">
+        <CardHeader className="px-6 pt-6">
+          <CardTitle className="text-lg">Quick totals</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 px-6 pb-6 pt-2">
+          {quickTotals.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.key}
+                className="flex items-center justify-between rounded-3xl border border-border bg-muted/5 p-4"
+              >
+                <div>
+                  <p className="text-sm font-semibold">{card.label}</p>
+                  <p className="mt-1 text-2xl font-bold tracking-tight">
+                    {formatNumber(data.cards[card.key])}
+                  </p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-5 w-5" />
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -128,45 +249,70 @@ function MonitoringGrid({ data }: { data: AdminDashboardData }) {
     data.monitoring.failedJobs === 0 &&
     data.monitoring.queueHealth.every((queue) => queue.healthy);
 
+  const statusCards = [
+    {
+      icon: Activity,
+      label: "System",
+      status: data.monitoring.systemStatus,
+      detail: `${formatDuration(data.monitoring.uptimeSeconds)} uptime`,
+    },
+    {
+      icon: Database,
+      label: "Database",
+      status: data.monitoring.database.status,
+      detail: data.monitoring.database.schema?.missing?.length
+        ? `${data.monitoring.database.schema.missing.length} schema migration pending`
+        : `Postgres ${data.monitoring.database.latencyMs ?? 0}ms`,
+    },
+    {
+      icon: Server,
+      label: "Redis",
+      status: data.monitoring.redis.status,
+      detail: `Cache and queues ${data.monitoring.redis.latencyMs ?? 0}ms`,
+    },
+    {
+      icon: ShieldAlert,
+      label: "Queue health",
+      status: queueHealthy ? "online" : "degraded",
+      detail: `${data.monitoring.failedJobs} failed · ${data.monitoring.stuckJobs} stuck · ${totalWaiting} waiting`,
+    },
+    {
+      icon: Cloud,
+      label: "Storage",
+      status: data.monitoring.storage.status,
+      detail: `${data.monitoring.storage.provider} · ${
+        data.monitoring.storage.writable ? "writable" : "read-only"
+      }`,
+    },
+  ];
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-      <StatusCard
-        icon={Activity}
-        label="System"
-        status={data.monitoring.systemStatus}
-        detail={`${formatDuration(data.monitoring.uptimeSeconds)} uptime`}
-      />
-      <StatusCard
-        icon={Database}
-        label="Database"
-        status={data.monitoring.database.status}
-        detail={
-          data.monitoring.database.schema?.missing?.length
-            ? `${data.monitoring.database.schema.missing.length} schema checks need migration`
-            : `Postgres ${data.monitoring.database.latencyMs ?? 0}ms`
-        }
-      />
-      <StatusCard
-        icon={Server}
-        label="Redis"
-        status={data.monitoring.redis.status}
-        detail={`Cache and queues ${data.monitoring.redis.latencyMs ?? 0}ms`}
-      />
-      <StatusCard
-        icon={ShieldAlert}
-        label="Queue health"
-        status={queueHealthy ? "online" : "degraded"}
-        detail={`${data.monitoring.failedJobs} failed, ${data.monitoring.stuckJobs} stuck, ${totalWaiting} waiting`}
-      />
-      <StatusCard
-        icon={Cloud}
-        label="Storage"
-        status={data.monitoring.storage.status}
-        detail={`${data.monitoring.storage.provider} - ${
-          data.monitoring.storage.writable ? "writable" : "read-only"
-        }`}
-      />
-    </div>
+    <Card className="rounded-3xl border border-border bg-background/95 shadow-sm">
+      <CardHeader className="space-y-3 px-6 pt-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <CardTitle className="text-2xl">Operational health</CardTitle>
+            <CardDescription>
+              Live platform status and infrastructure health in one clear view.
+            </CardDescription>
+          </div>
+          <span className="rounded-full border border-border bg-muted/10 px-3 py-1 text-sm font-medium text-muted-foreground">
+            Auto-refresh every 30 seconds
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {statusCards.map((card) => (
+          <StatusCard
+            key={card.label}
+            icon={card.icon}
+            label={card.label}
+            status={card.status}
+            detail={card.detail}
+          />
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -181,25 +327,31 @@ function StatusCard({
   status: string;
   detail: string;
 }) {
-  const good = status === "online";
+  const isOnline = status.toLowerCase() === "online";
+  const statusTone = isOnline
+    ? "bg-emerald-500/10 text-emerald-700"
+    : "bg-amber-500/10 text-amber-700";
+
   return (
-    <Card className="rounded-2xl">
-      <CardContent className="flex items-center gap-4 p-5">
-        <div
-          className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-xl",
-            good ? "bg-accent/10 text-accent0" : "bg-primary/10 text-primary0"
-          )}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold">{label}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
+    <Card className="rounded-3xl border border-border bg-white/90 shadow-sm dark:bg-slate-950/80">
+      <CardContent className="space-y-4 p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">{label}</p>
+              <p className="text-xs text-muted-foreground">Service status</p>
+            </div>
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${statusTone} whitespace-nowrap`}
+          >
             {status}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
+          </span>
         </div>
+        <p className="text-sm leading-6 text-muted-foreground">{detail}</p>
       </CardContent>
     </Card>
   );
@@ -321,108 +473,200 @@ function AdminTables({
   toast: ReturnType<typeof useToast>["toast"];
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
-      <TableCard
-        title="Newest users"
-        rows={data.tables.newestUsers.map((user) => ({
-          primary: `${user.firstName} ${user.lastName}`,
-          secondary: `@${user.username} - ${user.email}`,
-          meta: user.emailVerifiedAt ? "Verified" : "Unverified",
-        }))}
-      />
-      <TableCard
-        title="Recent failures"
-        rows={data.tables.recentFailures.map((failure) => ({
-          primary: failure.type,
-          secondary: failure.errorMessage || "No error message captured",
-          meta: new Date(failure.createdAt).toLocaleDateString(),
-        }))}
-      />
-      <TableCard
-        title="Recent AI jobs"
-        rows={data.tables.recentAiJobs.map((job) => ({
-          primary: job.type,
-          secondary: `${job.provider} - ${(job.promptTokens ?? 0) + (job.completionTokens ?? 0)} tokens`,
-          meta: job.status,
-        }))}
-      />
-      <TableCard
-        title="Recent notifications"
-        rows={data.tables.recentNotifications.map((notification) => ({
-          primary: notification.title,
-          secondary: `${notification.type} - ${notification.user?.email ?? "Unknown user"}`,
-          meta: notification.status,
-        }))}
-      />
-      <Card className="rounded-2xl xl:col-span-2">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Clock className="h-5 w-5 text-primary" />
-            Queue details
-          </CardTitle>
+    <div className="grid gap-6">
+      <Card className="rounded-3xl border border-border bg-background/90 shadow-sm">
+        <CardHeader className="space-y-2 px-6 pt-6">
+          <CardTitle className="text-2xl">Recent activity</CardTitle>
+          <CardDescription>
+            Latest user, AI, failure, and notification events in one consolidated view.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
-          {data.monitoring.queueHealth.map((queue) => (
-            <div key={queue.name} className="rounded-xl border border-border bg-background/40 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold">{queue.name}</p>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-medium",
-                    queue.healthy
-                      ? "bg-accent/10 text-accent0"
-                      : "bg-destructive/10 text-destructive"
-                  )}
-                >
-                  {queue.healthy ? "Healthy" : "Needs review"}
-                </span>
-              </div>
-              <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs text-muted-foreground sm:grid-cols-8">
-                <QueueCount label="Waiting" value={queue.waiting} />
-                <QueueCount label="Active" value={queue.active} />
-                <QueueCount label="Done" value={queue.completed} />
-                <QueueCount label="Failed" value={queue.failed} />
-                <QueueCount label="Delayed" value={queue.delayed} />
-                <QueueCount label="Paused" value={queue.paused} />
-                <QueueCount label="Retries" value={queue.retryCount} />
-                <QueueCount label="Stuck" value={queue.stuck} />
-              </div>
-              {queue.recentFailures?.length ? (
-                <div className="mt-4 space-y-2">
-                  {queue.recentFailures.slice(0, 2).map((failure) => (
-                    <div key={failure.id} className="rounded-lg bg-destructive/5 p-2 text-xs text-muted-foreground">
-                      <p className="font-medium text-foreground">{failure.name}</p>
-                      <p className="mt-1 line-clamp-2">{failure.failedReason || "No failure reason captured"}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-              <RetryQueueButton
-                queueName={queue.name}
-                disabled={queue.failed === 0}
-                onRetryComplete={onRetryComplete}
-                toast={toast}
-              />
-            </div>
-          ))}
+        <CardContent className="grid gap-4 lg:grid-cols-2">
+          <ActivitySection
+            title="Newest users"
+            rows={data.tables.newestUsers.map((user) => ({
+              primary: `${user.firstName} ${user.lastName}`,
+              secondary: `@${user.username} · ${user.email}`,
+              meta: user.emailVerifiedAt ? "Verified" : "Unverified",
+            }))}
+          />
+          <ActivitySection
+            title="Recent AI jobs"
+            rows={data.tables.recentAiJobs.map((job) => ({
+              primary: job.type,
+              secondary: `${job.provider} · ${(job.promptTokens ?? 0) + (job.completionTokens ?? 0)} tokens`,
+              meta: job.status,
+            }))}
+          />
+          <ActivitySection
+            title="Recent failures"
+            rows={data.tables.recentFailures.map((failure) => ({
+              primary: failure.type,
+              secondary: failure.errorMessage || "No error message captured",
+              meta: new Date(failure.createdAt).toLocaleDateString(),
+            }))}
+          />
+          <ActivitySection
+            title="Recent notifications"
+            rows={data.tables.recentNotifications.map((notification) => ({
+              primary: notification.title,
+              secondary: `${notification.type} · ${notification.user?.email ?? "Unknown user"}`,
+              meta: notification.status,
+            }))}
+          />
         </CardContent>
       </Card>
-      <TableCard
-        title="Environment warnings"
-        rows={data.monitoring.environment.warnings.map((warning) => ({
-          primary: warning,
-          secondary: `${data.monitoring.environment.nodeEnv} - ${data.monitoring.environment.storageProvider}`,
-          meta: "Review",
-        }))}
-      />
-      <TableCard
-        title="Schema diagnostics"
-        rows={(data.monitoring.database.schema?.missing ?? []).map((item) => ({
-          primary: item,
-          secondary: "Database schema is behind the Prisma schema. Apply migrations before production launch.",
-          meta: "Migration",
-        }))}
-      />
+
+      <Card className="rounded-3xl border border-border bg-background/90 shadow-sm">
+        <CardHeader className="space-y-2 px-6 pt-6">
+          <CardTitle className="text-2xl">Platform diagnostics</CardTitle>
+          <CardDescription>
+            Queue health, environment warnings, and schema diagnostics for operational visibility.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 px-6 pb-6 pt-3">
+          <div className="space-y-4">
+            <div className="rounded-3xl border border-border bg-white/90 p-5 shadow-sm dark:bg-slate-950/80">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Queue details</p>
+                  <p className="text-xs text-muted-foreground">Retry and monitoring information for background queues.</p>
+                </div>
+                <span className="inline-flex items-center rounded-full bg-muted/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  {data.monitoring.queueHealth.length} queues
+                </span>
+              </div>
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                {data.monitoring.queueHealth.map((queue) => (
+                  <div key={queue.name} className="rounded-3xl border border-border bg-muted/5 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-semibold text-foreground">{queue.name}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{queue.healthy ? "Healthy" : "Needs review"}</p>
+                      </div>
+                      <span
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em]",
+                          queue.healthy ? "bg-emerald-500/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"
+                        )}
+                      >
+                        {queue.healthy ? "Healthy" : "Review"}
+                      </span>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+                      <QueueCount label="Waiting" value={queue.waiting} />
+                      <QueueCount label="Active" value={queue.active} />
+                      <QueueCount label="Done" value={queue.completed} />
+                      <QueueCount label="Failed" value={queue.failed} />
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-muted-foreground">
+                      <QueueCount label="Delayed" value={queue.delayed} />
+                      <QueueCount label="Retries" value={queue.retryCount} />
+                      <QueueCount label="Paused" value={queue.paused} />
+                      <QueueCount label="Stuck" value={queue.stuck} />
+                    </div>
+                    {queue.recentFailures?.length ? (
+                      <div className="mt-4 rounded-2xl bg-destructive/5 p-3 text-xs text-muted-foreground">
+                        <p className="font-medium text-foreground">Latest failure</p>
+                        <p className="mt-1 line-clamp-2">{queue.recentFailures[0].failedReason || "No failure reason captured"}</p>
+                      </div>
+                    ) : null}
+                    <RetryQueueButton
+                      queueName={queue.name}
+                      disabled={queue.failed === 0}
+                      onRetryComplete={onRetryComplete}
+                      toast={toast}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <DetailCard
+                title="Environment warnings"
+                rows={data.monitoring.environment.warnings.map((warning) => ({
+                  primary: warning,
+                  secondary: `${data.monitoring.environment.nodeEnv} · ${data.monitoring.environment.storageProvider}`,
+                }))}
+                emptyText="No environment warnings"
+              />
+              <DetailCard
+                title="Schema diagnostics"
+                rows={(data.monitoring.database.schema?.missing ?? []).map((item) => ({
+                  primary: item,
+                  secondary: "Database schema is behind the Prisma schema. Apply migrations before production launch.",
+                }))}
+                emptyText="No schema issues detected"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function ActivitySection({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: Array<{ primary: string; secondary: string; meta: string }>;
+}) {
+  return (
+    <div className="rounded-3xl border border-border bg-white/90 p-5 shadow-sm dark:bg-slate-950/80">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <span className="rounded-full bg-muted/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+          {rows.length}
+        </span>
+      </div>
+      <div className="space-y-3">
+        {rows.length ? (
+          rows.slice(0, 4).map((row, index) => (
+            <div key={`${title}-${index}`} className="rounded-2xl border border-border bg-background/50 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-foreground truncate">{row.primary}</p>
+                <span className="rounded-full bg-muted/10 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+                  {row.meta}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">{row.secondary}</p>
+            </div>
+          ))
+        ) : (
+          <EmptyText>No records yet.</EmptyText>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DetailCard({
+  title,
+  rows,
+  emptyText,
+}: {
+  title: string;
+  rows: Array<{ primary: string; secondary: string }>;
+  emptyText: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-border bg-white/90 p-5 shadow-sm dark:bg-slate-950/80">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <div className="mt-4 space-y-3">
+        {rows.length ? (
+          rows.slice(0, 4).map((row, index) => (
+            <div key={`${title}-${index}`} className="rounded-2xl border border-border bg-background/50 p-3">
+              <p className="text-sm font-semibold text-foreground truncate">{row.primary}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{row.secondary}</p>
+            </div>
+          ))
+        ) : (
+          <EmptyText>{emptyText}</EmptyText>
+        )}
+      </div>
     </div>
   );
 }
@@ -557,3 +801,6 @@ function formatDuration(seconds: number) {
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 }
+
+
+
