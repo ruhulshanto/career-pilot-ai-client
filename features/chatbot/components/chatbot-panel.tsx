@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useChatbotStore } from "@/shared/store/use-chatbot-store";
 import { useAuthStore } from "@/shared/store/auth-store";
 import { Plus, Loader2, AlertCircle, LogIn, Info, Trash2 } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { ToastAction } from "@/shared/components/ui/toast";
@@ -49,6 +50,7 @@ export const ChatbotPanel = () => {
     renameSession,
     togglePinSession,
     deleteSession,
+    setActiveSession,
   } = useChatbotStore();
   const currentUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
@@ -226,9 +228,12 @@ export const ChatbotPanel = () => {
   };
 
   return (
-    <Card className="min-h-[calc(100vh-14rem)] overflow-hidden border border-border shadow-sm">
-      <div className="grid min-h-full min-w-0 gap-px bg-border lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="flex min-w-0 flex-col bg-card p-6">
+    <Card className="h-[calc(100vh-14rem)] min-h-[600px] overflow-hidden border border-border shadow-sm flex flex-col">
+      <div className="grid h-full min-h-0 min-w-0 gap-px bg-border lg:grid-cols-[320px_minmax(0,1fr)] flex-1">
+        <aside className={cn(
+          "min-w-0 flex-col bg-card p-6 h-full min-h-0",
+          activeSessionId ? "hidden lg:flex" : "flex",
+        )}>
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
@@ -291,7 +296,21 @@ export const ChatbotPanel = () => {
           </ScrollArea>
         </aside>
 
-        <main className="flex min-w-0 flex-1 flex-col bg-card p-6">
+        <main className={cn(
+          "min-w-0 flex-1 flex-col bg-card p-6 h-full min-h-0",
+          activeSessionId ? "flex" : "hidden lg:flex",
+        )}>
+          {activeSessionId && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveSession(null)}
+              className="mb-4 w-fit gap-2 px-0 text-muted-foreground hover:text-foreground lg:hidden"
+            >
+              ← Back to Conversations
+            </Button>
+          )}
+
           {error && (
             <div className="mb-6">
               <Alert
@@ -337,7 +356,7 @@ export const ChatbotPanel = () => {
             </div>
           )}
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             {activeSessionId ? (
               <ChatInterface sessionId={activeSessionId} />
             ) : (
